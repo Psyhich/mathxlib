@@ -13,8 +13,10 @@ target_link_libraries(matrixlib
 target_include_directories(matrixlib 
 	PUBLIC
 		include/
-)
-target_include_directories(matrixlib
 	PRIVATE
 		"${CMAKE_BINARY_DIR}/configured_files/include"
+)
+set_target_properties(matrixlib
+	PROPERTIES
+		OUTPUT_NAME "matrix"
 )

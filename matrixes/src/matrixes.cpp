@@ -1,14 +1,18 @@
+#include <algorithm>
 #include <random>
 #include <stdexcept>
 #include <ctime>
 #include <cassert>
 #include <iostream>
+#include <cstring>
+#include <stack>
 
+#include "internal_use_only/config.hpp"
 #include "matrixes.h"
 
 void Matrix::MoveData(Matrix &&matrixToMove) noexcept
 {
-	CleanData();
+	delete[] m_values;
 
 	m_rows = matrixToMove.m_rows;
 	m_cols = matrixToMove.m_cols;
@@ -34,10 +38,6 @@ void Matrix::CopyData(const Matrix& matrixToCopy)
 	}
 }
 
-void Matrix::CleanData() noexcept
-{
-	delete[] m_values;
-}
 
 Matrix &Matrix::SetAll(double valueToSet) noexcept
 {
@@ -53,7 +53,7 @@ double Matrix::Random(double start, double end) noexcept
 {
 	using namespace std;
 
-	static default_random_engine generator(unsigned(time(nullptr)));
+	static random_device generator;
 	uniform_real_distribution<double> distribution(start, end);
 
 	return distribution(generator);
@@ -67,7 +67,7 @@ Matrix &Matrix::operator=(const Matrix &matrixToCopy)
 {
 	if(this != &matrixToCopy)
 	{
-		CleanData();
+		delete[] m_values;
 
 		CopyData(matrixToCopy);
 	}
@@ -90,43 +90,18 @@ Matrix &Matrix::operator=(Matrix &&matrixToMove) noexcept
 
 // Simple constructors
 Matrix::Matrix(size_t rows, size_t cols) :
-	m_rows{rows},
 	m_cols{cols},
+	m_rows{rows},
 	m_size{rows * cols},
 	m_values{new double[rows * cols]}
 {
 }
 Matrix::Matrix(size_t dimensions) :
-	m_rows{dimensions},
 	m_cols{dimensions},
+	m_rows{dimensions},
 	m_size{dimensions * dimensions},
 	m_values{new double[m_size]}
 {
-}
-
-Matrix::Matrix(const std::initializer_list<std::initializer_list<double>> &initializer) :
-	m_rows{initializer.size()},
-	m_cols{initializer.begin()->size()},
-	m_size{m_rows * m_cols},
-	m_values{new double[m_size]}
-{
-	for(const auto &list : initializer)
-	{
-		assert(list.size() == m_cols);
-	}
-
-	size_t index = 0;
-	for(const auto &list : initializer)
-	{
-		size_t internalIndex = 0;
-		for(const auto &val : list)
-		{
-			Get(index, internalIndex) = val;
-			internalIndex++;
-		}
-
-		index++;
-	}
 }
 
 Matrix::~Matrix() noexcept
@@ -161,29 +136,22 @@ void Matrix::Print() const
 	std::cout << std::endl;
 }
 
-Matrix Matrix::Map(MapFunc func) const noexcept
+Matrix Matrix::Map(const MapFunc &func) const
 {
-	Matrix outMatr{*this};
-	for (size_t row = 0; row < GetRows(); row++)
+	Matrix outMatrix{*this};
+	for (size_t index = 0; index < m_size; index++)
 	{
-		for (size_t col = 0; col < GetCols(); col++)
-		{
-			func(outMatr.Get(row, col), row, col);
-		}
+		func(outMatrix.m_values[index]);
 	}
 
-	return outMatr;
+	return outMatrix;
 }
-
-Matrix Matrix::Map(ReturningMapFunc func) const noexcept
+void Matrix::MapInplace(const MapFunc &func)
 {
-	Matrix outMatr{*this};
-	for(size_t index = 0; index < m_size; index++)
+	for (size_t index = 0; index < m_size; index++)
 	{
-		outMatr.m_values[index] = func(m_values[index]);
+		func(m_values[index]);
 	}
-
-	return outMatr;
 }
 
 Matrix Matrix::Transpose() const
@@ -200,9 +168,8 @@ Matrix Matrix::Transpose() const
 }
 Matrix Matrix::Multiply(const Matrix &matrixToMultiply) const
 {
-	assert(GetRows() == matrixToMultiply.GetRows());
-	assert(GetCols() == matrixToMultiply.GetCols());
-	
+	CheckBounds(matrixToMultiply.GetRows(), matrixToMultiply.GetCols());
+
 	Matrix outMatrix{*this};
 	for (size_t index = 0; index < m_size; index++)
 	{
@@ -213,19 +180,19 @@ Matrix Matrix::Multiply(const Matrix &matrixToMultiply) const
 
 Matrix Matrix::Inverse() const
 {
-	assert(GetRows() == GetCols());
-	double determ = Determinant();
-	if (determ == 0)
+	if(GetRows() != GetCols())
 	{
-		return Matrix(0);
+		throw std::runtime_error("Inverse is not implemented for non square matrixes");
 	}
-
-	return (Adjoint().Transpose() / determ).Transpose();
+	return (Adjoint().Transpose() / Determinant()).Transpose();
 }
 
 Matrix Matrix::Adjoint() const
 {
-	assert(GetRows() == GetCols());
+	if(GetRows() != GetCols())
+	{
+		throw std::runtime_error("Adjoint is not implemented for non square matrixes");
+	}
 
 	Matrix outMatrix{*this};
 	size_t const rank = GetRows();
@@ -233,29 +200,7 @@ Matrix Matrix::Adjoint() const
 	{
 		for (size_t currCol = 0; currCol < rank; currCol++)
 		{
-			Matrix minor(rank - 1);
-
-			// Building minor
-			size_t rowIndex = 0; // real minor row index
-			// Loop goes through all matrix and adds only rows and cols that are not
-			// currRow and currCol
-			for (size_t row = 0; row < rank; row++)
-			{
-				if (row != currRow)
-				{
-					// If we get simillar we just skip and don't add row/col
-					size_t colIndex = 0;
-					for (size_t col = 0; col < rank; col++)
-					{
-						if (col != currCol)
-						{
-							minor(rowIndex, colIndex) = Get(row, col);
-							++colIndex;
-						}
-					}
-					++rowIndex;
-				}
-			}
+			Matrix minor = ConstructMinor(currRow, currCol);
 			// After we constructed minor calculating it's cofactor and assigning
 			// it to outMatrix
 			outMatrix(currRow, currCol) = minor.Determinant() * ((currRow + currCol) % 2 == 0 ? 1 : -1);
@@ -264,44 +209,75 @@ Matrix Matrix::Adjoint() const
 
 	return outMatrix.Transpose();
 }
-
-double Matrix::Determinant() const noexcept
+double Matrix::DeterminantByMinorExpansion() const
 {
-	assert(GetRows() == GetCols());
 
-	const size_t rank = GetRows();
-	if (rank == 1)
+	std::stack<std::pair<double, Matrix>> matrixesToCalculate;
+
+	matrixesToCalculate.push({ 1, *this });
+
+	double determinant = 0;
+	while(!matrixesToCalculate.empty())
 	{
-		return Get(0, 0);
-	}
-	else if(rank == 2)
-	{
-		return Get(0, 0) * Get(1, 1) - Get(0, 1) * Get(1, 0);
-	}
-	else
-	{
-		double determinant = 0;
-		Matrix minor(rank - 1);
-		for (size_t i = 0; i < rank; i++)
+		const double coefficient = matrixesToCalculate.top().first;
+		const Matrix currentMatrix = std::move(matrixesToCalculate.top().second);
+		matrixesToCalculate.pop();
+
+		const size_t currentMatrixRank = currentMatrix.GetRows();
+		if(currentMatrixRank == 1)
 		{
-			// Constructing minor
-			for (size_t row = 1; row < rank; row++)
-			{
-				size_t colIndex = 0;
-				for (size_t col = 0; col < rank; col++)
-				{
-					if (col != i)
-					{
-						minor(row - 1, colIndex) = Get(row, col);
-						++colIndex;
-					}
-				}
-			}
-			determinant += minor.Determinant() * 
-				Get(0, i) * (i % 2 == 0 ? 1 : -1);
+			determinant += coefficient * currentMatrix.Get(0, 0);
 		}
-		return determinant;
+		else if(currentMatrixRank == 2)
+		{
+			determinant += coefficient * (currentMatrix.Get(0, 0) * currentMatrix.Get(1, 1) -
+				currentMatrix.Get(0, 1) * currentMatrix.Get(1, 0));
+		}
+		else
+		{
+			for(size_t i = 0; i < currentMatrixRank; i++)
+			{
+				matrixesToCalculate.push(
+					{
+						Get(0, i) * (i % 2 == 0 ? 1 : -1),
+						currentMatrix.ConstructMinor(0, i)
+					});
+			}
+		}
 	}
+
+	return determinant;
+}
+
+Matrix Matrix::ConstructMinor(const size_t rowToExclude, const size_t colToExclude) const
+{
+	Matrix minor{GetRows() - 1, GetCols() - 1};
+	for (size_t row = 0; row < GetRows(); row++)
+	{
+		if(row == rowToExclude)
+		{
+			continue;
+		}
+		size_t colIndex = 0;
+		for (size_t col = 0; col < GetCols(); col++)
+		{
+			if (col != colToExclude)
+			{
+				minor(row - 1, colIndex) = Get(row, col);
+				++colIndex;
+			}
+		}
+	}
+	return minor;
+}
+
+double Matrix::Determinant() const
+{
+	if(GetRows() != GetCols())
+	{
+		throw std::runtime_error("Determinant is not implemented for non square matrixes");
+	}
+	return DeterminantByMinorExpansion();
 }
 
 bool Matrix::IsEqualTo(const Matrix &otherMatrix, double eps) const noexcept
@@ -325,7 +301,7 @@ bool Matrix::IsEqualTo(const Matrix &otherMatrix, double eps) const noexcept
 // Operations with other matrixes
 Matrix Matrix::operator*(const Matrix &matrixToDotProduct) const
 {
-	assert(GetCols() == matrixToDotProduct.GetRows());
+	CheckBounds(GetRows(), matrixToDotProduct.GetRows());
 
 	Matrix out{GetRows(), matrixToDotProduct.GetCols()};
 
@@ -347,8 +323,7 @@ Matrix Matrix::operator*(const Matrix &matrixToDotProduct) const
 
 Matrix Matrix::operator+(const Matrix &matrixToAdd) const
 {
-	assert(GetRows() == matrixToAdd.GetRows());
-	assert(GetCols() == matrixToAdd.GetCols());
+	CheckBounds(matrixToAdd.GetRows(), matrixToAdd.GetCols());
 
 	Matrix outMatrix = *this;
 
@@ -361,8 +336,7 @@ Matrix Matrix::operator+(const Matrix &matrixToAdd) const
 }
 Matrix Matrix::operator-(const Matrix &matrixToSubstract) const
 {
-	assert(GetRows() == matrixToSubstract.GetRows());
-	assert(GetCols() == matrixToSubstract.GetCols());
+	CheckBounds(matrixToSubstract.GetRows(), matrixToSubstract.GetCols());
 
 	Matrix outMatrix = *this;
 
@@ -374,10 +348,9 @@ Matrix Matrix::operator-(const Matrix &matrixToSubstract) const
 	return outMatrix;
 }
 
-Matrix &Matrix::operator+=(const Matrix &matrixToAdd) noexcept
+Matrix &Matrix::operator+=(const Matrix &matrixToAdd)
 {
-	assert(GetRows() == matrixToAdd.GetRows());
-	assert(GetCols() == matrixToAdd.GetCols());
+	CheckBounds(matrixToAdd.GetRows(), matrixToAdd.GetCols());
 
 	for (size_t index = 0; index < m_size; index++)
 	{
@@ -385,12 +358,11 @@ Matrix &Matrix::operator+=(const Matrix &matrixToAdd) noexcept
 	}
 	return *this;
 }
-Matrix &Matrix::operator-=(const Matrix &matrixToSubstract) noexcept
+Matrix &Matrix::operator-=(const Matrix &matrixToSubstract)
 {
-	assert(GetRows() == matrixToSubstract.GetRows());
-	assert(GetCols() == matrixToSubstract.GetCols());
+	CheckBounds(matrixToSubstract.GetRows(), matrixToSubstract.GetCols());
 
-	for (size_t index = 0; index < m_size; index++)
+	for(size_t index = 0; index < m_size; index++)
 	{
 		m_values[index] -= matrixToSubstract.m_values[index];
 	}

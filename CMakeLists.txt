@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.22)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 set(ENABLE_DEVELOPER_MODE TRUE CACHE BOOL "Enable 'developer mode'")
@@ -39,7 +39,7 @@ if(BUILDING_MULTI_CONFIG)
 endif()
 
 include(FetchContent)
-FetchContent_Declare(_project_options URL https://github.com/aminya/project_options/archive/refs/tags/v0.20.0.zip)
+FetchContent_Declare(_project_options URL https://github.com/aminya/project_options/archive/refs/tags/v0.26.3.zip)
 FetchContent_MakeAvailable(_project_options)
 include(${_project_options_SOURCE_DIR}/Index.cmake)
 include(${_project_options_SOURCE_DIR}/src/DynamicProjectOptions.cmake)
@@ -73,6 +73,5 @@ add_subdirectory(matrixes)
 
 if(ENABLE_TESTING)
 	enable_testing()
-	message(AUTHOR_WARNING "Building Tests. Be sure to check out test/constexpr_tests.cpp for constexpr testing")
-	add_subdirectory(test)
+	add_subdirectory(unit_tests)
 endif()
