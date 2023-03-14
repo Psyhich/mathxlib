@@ -10,6 +10,9 @@ compile_commands.json
 
 # IDE files
 .vs/
+.cache/
+.ccls-cache/
+.clang-tidy
 .idea/
 .vscode/
 !.vscode/settings.json
