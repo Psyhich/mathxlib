@@ -1,15 +1,18 @@
 #ifndef MYPROJECT_CONFIG_HPP
 #define MYPROJECT_CONFIG_HPP
 
-namespace myproject::cmake
+#include <string_view>
+
+namespace matrixlib::info
 {
-	static constexpr const char *const project_name = "@PROJECT_NAME@";
-	static constexpr const char *const project_version = "@PROJECT_VERSION@";
+	static constexpr const std::string_view project_name = "@PROJECT_NAME@";
+	static constexpr const std::string_view project_version = "@PROJECT_VERSION@";
 	static constexpr int project_version_major { @PROJECT_VERSION_MAJOR@ };
 	static constexpr int project_version_minor { @PROJECT_VERSION_MINOR@ };
 	static constexpr int project_version_patch { @PROJECT_VERSION_PATCH@ };
 	static constexpr int project_version_tweak { @PROJECT_VERSION_TWEAK@ };
-	static constexpr const char *const git_sha = "@GIT_SHA@";
+	static constexpr const std::string_view git_sha = "@GIT_SHA@";
+	static constexpr const std::string_view BUILD_TYPE = "@BUILD_TYPE@";
 }
 
 #endif
