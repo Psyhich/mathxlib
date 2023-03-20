@@ -110,13 +110,13 @@ Matrix::~Matrix() noexcept
 }
 
 // Methods
-Matrix &Matrix::Randomise(double startValue, double endValue) noexcept
+Matrix &Matrix::Randomise(double startValue, double endValue)
 {
 	for (size_t row = 0; row < GetRows(); row++)
 	{
 		for (size_t col = 0; col < GetCols(); col++)
 		{
-			Get(row, col) = Random(startValue, endValue);
+			(*this)(row, col) = Random(startValue, endValue);
 		}
 	}
 	return *this;
@@ -161,14 +161,14 @@ Matrix Matrix::Transpose() const
 	{
 		for (size_t col = 0; col < GetCols(); col++)
 		{
-			transposed(col, row) = Get(row, col);
+			transposed(col, row) = (*this)(row, col);
 		}
 	}
 	return transposed;
 }
 Matrix Matrix::Multiply(const Matrix &matrixToMultiply) const
 {
-	CheckBounds(matrixToMultiply.GetRows(), matrixToMultiply.GetCols());
+	CheckDimensions(matrixToMultiply.GetRows(), matrixToMultiply.GetCols());
 
 	Matrix outMatrix{*this};
 	for (size_t index = 0; index < m_size; index++)
@@ -226,12 +226,12 @@ double Matrix::DeterminantByMinorExpansion() const
 		const size_t currentMatrixRank = currentMatrix.GetRows();
 		if(currentMatrixRank == 1)
 		{
-			determinant += coefficient * currentMatrix.Get(0, 0);
+			determinant += coefficient * currentMatrix(0, 0);
 		}
 		else if(currentMatrixRank == 2)
 		{
-			determinant += coefficient * (currentMatrix.Get(0, 0) * currentMatrix.Get(1, 1) -
-				currentMatrix.Get(0, 1) * currentMatrix.Get(1, 0));
+			determinant += coefficient * (currentMatrix(0, 0) * currentMatrix(1, 1) -
+				currentMatrix(0, 1) * currentMatrix(1, 0));
 		}
 		else
 		{
@@ -239,7 +239,7 @@ double Matrix::DeterminantByMinorExpansion() const
 			{
 				matrixesToCalculate.push(
 					{
-						Get(0, i) * (i % 2 == 0 ? 1 : -1),
+						(*this)(0, i) * (i % 2 == 0 ? 1 : -1),
 						currentMatrix.ConstructMinor(0, i)
 					});
 			}
@@ -252,20 +252,21 @@ double Matrix::DeterminantByMinorExpansion() const
 Matrix Matrix::ConstructMinor(const size_t rowToExclude, const size_t colToExclude) const
 {
 	Matrix minor{GetRows() - 1, GetCols() - 1};
+	size_t rowIndex{0};
 	for (size_t row = 0; row < GetRows(); row++)
 	{
-		if(row == rowToExclude)
+		if(row != rowToExclude)
 		{
-			continue;
-		}
-		size_t colIndex = 0;
-		for (size_t col = 0; col < GetCols(); col++)
-		{
-			if (col != colToExclude)
+			size_t colIndex{0};
+			for (size_t col = 0; col < GetCols(); col++)
 			{
-				minor(row - 1, colIndex) = Get(row, col);
-				++colIndex;
+				if (col != colToExclude)
+				{
+					minor(rowIndex, colIndex) = (*this)(row, col);
+					++colIndex;
+				}
 			}
+			++rowIndex;
 		}
 	}
 	return minor;
@@ -301,7 +302,7 @@ bool Matrix::IsEqualTo(const Matrix &otherMatrix, double eps) const noexcept
 // Operations with other matrixes
 Matrix Matrix::operator*(const Matrix &matrixToDotProduct) const
 {
-	CheckBounds(GetRows(), matrixToDotProduct.GetRows());
+	CheckDimensions(GetRows(), matrixToDotProduct.GetRows());
 
 	Matrix out{GetRows(), matrixToDotProduct.GetCols()};
 
@@ -309,11 +310,11 @@ Matrix Matrix::operator*(const Matrix &matrixToDotProduct) const
 	{
 		for (size_t col = 0; col < matrixToDotProduct.GetCols(); col++) 
 		{
-			double &val = out.Get(row, col);
+			double &val = out(row, col);
 			val = 0;
 			for (size_t iter = 0; iter < matrixToDotProduct.GetRows(); iter++)
 			{
-				val += Get(row, iter) * matrixToDotProduct.Get(iter, col);
+				val += (*this)(row, iter) * matrixToDotProduct(iter, col);
 			}
 		}
 	}
@@ -323,7 +324,7 @@ Matrix Matrix::operator*(const Matrix &matrixToDotProduct) const
 
 Matrix Matrix::operator+(const Matrix &matrixToAdd) const
 {
-	CheckBounds(matrixToAdd.GetRows(), matrixToAdd.GetCols());
+	CheckDimensions(matrixToAdd.GetRows(), matrixToAdd.GetCols());
 
 	Matrix outMatrix = *this;
 
@@ -336,7 +337,7 @@ Matrix Matrix::operator+(const Matrix &matrixToAdd) const
 }
 Matrix Matrix::operator-(const Matrix &matrixToSubstract) const
 {
-	CheckBounds(matrixToSubstract.GetRows(), matrixToSubstract.GetCols());
+	CheckDimensions(matrixToSubstract.GetRows(), matrixToSubstract.GetCols());
 
 	Matrix outMatrix = *this;
 
@@ -350,7 +351,7 @@ Matrix Matrix::operator-(const Matrix &matrixToSubstract) const
 
 Matrix &Matrix::operator+=(const Matrix &matrixToAdd)
 {
-	CheckBounds(matrixToAdd.GetRows(), matrixToAdd.GetCols());
+	CheckDimensions(matrixToAdd.GetRows(), matrixToAdd.GetCols());
 
 	for (size_t index = 0; index < m_size; index++)
 	{
@@ -360,7 +361,7 @@ Matrix &Matrix::operator+=(const Matrix &matrixToAdd)
 }
 Matrix &Matrix::operator-=(const Matrix &matrixToSubstract)
 {
-	CheckBounds(matrixToSubstract.GetRows(), matrixToSubstract.GetCols());
+	CheckDimensions(matrixToSubstract.GetRows(), matrixToSubstract.GetCols());
 
 	for(size_t index = 0; index < m_size; index++)
 	{

@@ -6,19 +6,18 @@
 #include <initializer_list>
 #include <stdexcept>
 
+#include <fmt/format.h>
+
 class Matrix
 {
 public:
 	using size_t = std::size_t;
 	using MapFunc = std::function<void(double &value)>;
 
-	template<size_t ColsCount>
-	using MatrixInitializerList = std::initializer_list<double[ColsCount]>;
-
 	Matrix() noexcept = default;
 
 	template<size_t ColsCount>
-	explicit Matrix(const MatrixInitializerList<ColsCount> &initializer) :
+	explicit Matrix(const std::initializer_list<double[ColsCount]> &initializer) :
 		m_cols{ColsCount},
 		m_rows{initializer.size()},
 		m_size{m_rows * m_cols},
@@ -43,7 +42,7 @@ public:
 
 	~Matrix() noexcept;
 
-	Matrix &Randomise(double startValue, double endValue) noexcept;
+	Matrix &Randomise(double startValue, double endValue);
 	void Print() const;
 	[[nodiscard]] Matrix Map(const MapFunc &func) const;
 	void MapInplace(const MapFunc &func);
@@ -59,25 +58,19 @@ public:
 	[[nodiscard]] constexpr inline size_t GetCols() const noexcept { return m_cols; }
 	[[nodiscard]] constexpr inline size_t GetRows() const noexcept { return m_rows; }
 
-	constexpr inline const double &operator()(size_t row, size_t col) const noexcept
+	constexpr inline const double &operator()(size_t row, size_t col) const
 	{
+		CheckBounds(row, col);
 		return m_values[CalculatePos(row, col)];
 	}
-	constexpr inline double &operator()(size_t row, size_t col) noexcept
+	constexpr inline double &operator()(size_t row, size_t col)
 	{
+		CheckBounds(row, col);
 		return m_values[CalculatePos(row, col)];
 	}
-
-	[[nodiscard]] constexpr inline const double &Get(size_t row, size_t col) const noexcept
+	constexpr inline void Set(size_t row, size_t col, double value)
 	{
-		return m_values[CalculatePos(row, col)];
-	}
-	constexpr inline double &Get(size_t row, size_t col) noexcept
-	{
-		return m_values[CalculatePos(row, col)];
-	}
-	constexpr inline void Set(size_t row, size_t col, double value) noexcept
-	{
+		CheckBounds(row, col);
 		m_values[CalculatePos(row, col)] = value;
 	}
 	Matrix &SetAll(double valueToSet) noexcept;
@@ -103,7 +96,7 @@ private:
 	void MoveData(Matrix &&matrixToMove) noexcept;
 	void CopyData(const Matrix& matrixToCopy);
 
-	inline void CheckBounds(size_t requiredRows, size_t requiredColumns) const
+	inline void CheckDimensions(size_t requiredRows, size_t requiredColumns) const
 	{
 		if(GetCols() != requiredColumns)
 		{
@@ -112,6 +105,15 @@ private:
 		else if(GetRows() != requiredRows)
 		{
 			throw std::length_error("Required rows not matched");
+		}
+	}
+	constexpr inline void CheckBounds(const size_t row, const size_t col) const
+	{
+		if(row >= GetRows() || 
+			col >= GetCols())
+		{
+			throw std::out_of_range{
+				fmt::format("Reached out of bounds of matrix {}x{} with row: {} and col: {}", GetRows(), GetCols(), row, col)};
 		}
 	}
 
@@ -131,7 +133,7 @@ private:
 	size_t m_rows{ 0 };
 	size_t m_size{ 0 };
 
-	double * m_values{ nullptr };
+	double *m_values{ nullptr };
 };
 
 #endif
