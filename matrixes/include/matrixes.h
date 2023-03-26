@@ -83,14 +83,15 @@ public:
 	Matrix &operator+=(const Matrix &matrixToAdd);
 	Matrix &operator-=(const Matrix &matrixToSubstract);
 
+	// TODO: add scalar assigment operations
 	// Operations with scalar values
-	Matrix &operator/(double numberToDivide) noexcept;
-	Matrix &operator*(double numberToMultiply) noexcept;
-	Matrix &operator+(double numberToAdd) noexcept;
-	Matrix &operator-(double numberToSubstract) noexcept;
+	Matrix operator/(double numberToDivide) const;
+	Matrix operator*(double numberToMultiply) const;
+	Matrix operator+(double numberToAdd) const;
+	Matrix operator-(double numberToSubstract) const;
 
 	// Unaries
-	Matrix &operator-() noexcept;
+	Matrix operator-() const;
 
 private:
 	void MoveData(Matrix &&matrixToMove) noexcept;

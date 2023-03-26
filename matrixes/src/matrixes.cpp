@@ -184,7 +184,12 @@ Matrix Matrix::Inverse() const
 	{
 		throw std::runtime_error("Inverse is not implemented for non square matrixes");
 	}
-	return (Adjoint().Transpose() / Determinant()).Transpose();
+	const double determinant = Determinant();
+	if(std::abs(determinant) <= DEFAULT_ACCURACY)
+	{
+		throw std::runtime_error("Matrix is triangular, no inverse can be found");
+	}
+	return (Adjoint().Transpose() / determinant).Transpose();
 }
 
 Matrix Matrix::Adjoint() const
@@ -372,52 +377,54 @@ Matrix &Matrix::operator-=(const Matrix &matrixToSubstract)
 }
 
 // Operations with scalar values
-Matrix &Matrix::operator/(double numberToDivide) noexcept
+Matrix Matrix::operator/(double numberToDivide) const
 {
+	Matrix resultedMatrix{*this};
 	for (size_t index = 0; index < m_size; index++)
 	{
-		m_values[index] /= numberToDivide;
+		resultedMatrix.m_values[index] /= numberToDivide;
 	}
 
-	return *this;
+	return resultedMatrix;
 }
-Matrix &Matrix::operator*(double numberToMultiply) noexcept
+Matrix Matrix::operator*(double numberToMultiply) const
 {
+	Matrix resultedMatrix{*this};
 	for (size_t index = 0; index < m_size; index++)
 	{
-		m_values[index] *= numberToMultiply;
+		resultedMatrix.m_values[index] *= numberToMultiply;
 	}
 
-	return *this;
-}
-
-Matrix &Matrix::operator+(double numberToAdd) noexcept
-{
-	for (size_t index = 0; index < m_size; index++)
-	{
-		m_values[index] += numberToAdd;
-	}
-
-	return *this;
+	return resultedMatrix;
 }
 
-Matrix &Matrix::operator-(double numberToSubstract) noexcept
+Matrix Matrix::operator+(double numberToAdd) const
 {
+	Matrix resultedMatrix{*this};
 	for (size_t index = 0; index < m_size; index++)
 	{
-		m_values[index] -= numberToSubstract;
+		resultedMatrix.m_values[index] += numberToAdd;
 	}
+	return resultedMatrix;
+}
 
-	return *this;
+Matrix Matrix::operator-(double numberToSubstract) const
+{
+	Matrix resultedMatrix{*this};
+	for (size_t index = 0; index < m_size; index++)
+	{
+		resultedMatrix.m_values[index] -= numberToSubstract;
+	}
+	return resultedMatrix;
 }
 
 // Unaries
-Matrix &Matrix::operator-() noexcept
+Matrix Matrix::operator-() const
 {
+	Matrix negativeMatrix{*this};
 	for (size_t index = 0; index < m_size; index++)
 	{
-		m_values[index] *= -1;
+		negativeMatrix.m_values[index] *= -1;
 	}
-
-	return *this;
+	return negativeMatrix;
 }

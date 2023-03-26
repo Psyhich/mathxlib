@@ -8,6 +8,8 @@ set(OPT_WARNINGS_AS_ERRORS_DEVELOPER_DEFAULT TRUE)
 
 option(ENABLE_TESTING "Enable the tests" ${PROJECT_IS_TOP_LEVEL})
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+
 project(matrixlib
 	VERSION 0.0.2
 	DESCRIPTION "Simple library for manipulations with matrixes"
@@ -44,11 +46,14 @@ FetchContent_MakeAvailable(_project_options)
 include(${_project_options_SOURCE_DIR}/Index.cmake)
 include(${_project_options_SOURCE_DIR}/src/DynamicProjectOptions.cmake)
 
+if(ENABLE_TESTING)
+	set(CONAN_TESTS_DEPENDENCIES "matrixlib:build_tests=True")
+endif()
+
 dynamic_project_options(
-	PCH_HEADERS
-		<vector>
-		<string>
 	ENABLE_CONAN
+	CONAN_OPTIONS
+		${CONAN_TESTS_DEPENDENCIES}
 	CPPCHECK_OPTIONS
 		--enable=style,performance,warning,portability
 		--inline-suppr
@@ -72,6 +77,8 @@ add_subdirectory(configured_files)
 add_subdirectory(matrixes)
 
 if(ENABLE_TESTING)
+	include(CodeCoverage)
+	append_coverage_compiler_flags_to_target(matrixlib)
 	enable_testing()
 	add_subdirectory(unit_tests)
 endif()

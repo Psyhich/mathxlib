@@ -1,9 +1,9 @@
-#include "gmock/gmock.h"
 #include <cstddef>
 #include <stdexcept>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
+#include <fmt/color.h>
 
 #include "matrixes.h"
 
@@ -11,26 +11,39 @@ MATCHER_P(IsEqualMatrix, rmatrix, "")
 {
 	if(arg.GetRows() != rmatrix.GetRows())
 	{
+		*result_listener << fmt::format(fg(fmt::color::red), "\nERROR:") <<
+			fmt::format("\nMatrix has {} rows, but {} expected\n", arg.GetRows(), rmatrix.GetRows());
 		return false;
 	}
 	if(arg.GetCols() != rmatrix.GetCols())
 	{
+		*result_listener << fmt::format(fg(fmt::color::red), "\nERROR:") <<
+			fmt::format("\nMatrix has {} columns, but {} expected\n", arg.GetCols(), rmatrix.GetCols());
 		return false;
 	}
 
+	constexpr const double DEFAULT_ACCURACY{1e-6};
 	for(std::size_t row = 0;
 		row < rmatrix.GetRows(); row++)
 	{
 		for(std::size_t col = 0;
 			col < rmatrix.GetCols(); col++)
 		{
-			if(std::abs(arg(row, col) - rmatrix(row, col)) > 1e-6)
+			const auto difference{std::abs(arg(row, col) - rmatrix(row, col))};
+			if(difference > DEFAULT_ACCURACY)
 			{
+				*result_listener << fmt::format(fg(fmt::color::red), "\nERROR:") <<
+					fmt::format("\nGiven matrix value {} on {{{};{}}} "
+							"is not nearly equals to {}.\n"
+							"Difference is: {}\n",
+							arg(row, col), row, col,
+							rmatrix(row, col),
+							difference);
 				return false;
 			}
 		}
 	}
-	return true;
+	return testing::AssertionSuccess();
 }
 
 class MatrixConstructionTest :
@@ -108,7 +121,7 @@ TEST_F(MatrixConstructionTest, ByRankConstructionTestSuccessful)
 }
 TEST_F(MatrixConstructionTest, CopyConstructionTestSuccessful_1)
 {
-	Matrix newMatrix{
+	const Matrix newMatrix{
 		{ 1, 2 },
 		{ 3, 4 }
 	};
@@ -118,11 +131,12 @@ TEST_F(MatrixConstructionTest, CopyConstructionTestSuccessful_1)
 }
 TEST_F(MatrixConstructionTest, CopyConstructionTestSuccessful_2)
 {
-	Matrix newMatrix{
+	const Matrix newMatrix{
 		{ 1, 2 },
 		{ 3, 4 }
 	};
-	const Matrix copy = newMatrix;
+	Matrix copy{{1}};
+	copy = newMatrix;
 
 	EXPECT_THAT(copy, IsEqualMatrix(newMatrix));
 }
@@ -382,7 +396,11 @@ TEST(MatrixDeterminantTest, LargeSquareMatrixDeterminantTestSuccessful)
 	}
 	EXPECT_THAT(toGetDeterminant.Determinant(), testing::DoubleEq(0));
 }
-// Currently unimplemeted feature
+TEST(MatrixDeterminantTest, SingleValueSquareMatrixDeterminantTestSuccessful)
+{
+	Matrix toGetDeterminant{ { 1 } };
+	EXPECT_THAT(toGetDeterminant.Determinant(), testing::DoubleEq(1));
+}
 TEST(MatrixDeterminantTest, NonSquareMatrixDeterminantTestUnsuccessful)
 {
 	Matrix toGetDeterminant{ 6, 3 };
@@ -533,6 +551,40 @@ TEST(MatrixAdjointTest, NonSquareMatrixAdjointTestUnsuccesful) {
 
 	EXPECT_THROW({(void)toBeProcessed.Adjoint();}, std::runtime_error);
 }
+TEST(MatrixInverseTest, SquareMatrixInverseTestSuccesful)
+{
+	const Matrix toBeProcessed{
+		{ 7, 8, 9 },
+		{ 6, 5, 4 },
+		{ 3, 2, 2 }
+	};
+
+	const Matrix result = toBeProcessed.Inverse();
+	const Matrix expected{
+		{ -2/13.0, -2/13.0, 1 },
+		{ 0, 1, -2 },
+		{ 3/13.0, -10/13.0, 1 }
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixInverseTest, NonSquareMatrixInverseTestUnsuccesful)
+{
+	const Matrix toBeProcessed{
+		{ 7, 8, 9, 10.6 },
+		{ 6, 5, 4, 10.6 },
+		{ 3, 2, 1, 10.6 }
+	};
+	EXPECT_THROW({(void)toBeProcessed.Inverse();}, std::runtime_error);
+}
+TEST(MatrixInverseTest, TriangularMatrixInverseTestUnsuccesful)
+{
+	const Matrix toBeProcessed{
+		{ 1, 2, 3 },
+		{ 4, 5, 6 },
+		{ 7, 8, 9 }
+	};
+	EXPECT_THROW({(void)toBeProcessed.Inverse();}, std::runtime_error);
+}
 
 TEST(MatrixAdditionTest, MatrixAdditionTestSuccessful_1)
 {
@@ -554,11 +606,11 @@ TEST(MatrixAdditionTest, MatrixAdditionTestSuccessful_1)
 }
 TEST(MatrixAdditionTest, EmptyMatrixAdditionTestSuccessful)
 {
-	const Matrix lmatrix{};
-	const Matrix rmatrix{};
+	const Matrix lmatrix;
+	const Matrix rmatrix;
 
 	const Matrix result = lmatrix + rmatrix;
-	const Matrix expected{};
+	const Matrix expected;
 	EXPECT_THAT(result, IsEqualMatrix(expected));
 }
 TEST(MatrixAdditionTest, MatrixSelfAdditionTestSuccessful)
@@ -575,6 +627,13 @@ TEST(MatrixAdditionTest, MatrixSelfAdditionTestSuccessful)
 	};
 	EXPECT_THAT(result, IsEqualMatrix(expected));
 }
+TEST(MatrixAdditionTest, EmptyMatrixSelfAdditionTestSuccessful)
+{
+	const Matrix lmatrix;
+	const Matrix result = lmatrix + lmatrix;
+	const Matrix expected;
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
 TEST(MatrixAdditionTest, DifferentMatrixAdditionTestUnsuccessful)
 {
 	const Matrix lmatrix{
@@ -589,6 +648,68 @@ TEST(MatrixAdditionTest, DifferentMatrixAdditionTestUnsuccessful)
 
 	Matrix result;
 	EXPECT_THROW({ result = lmatrix + rmatrix; }, std::length_error);
+}
+TEST(MatrixAdditionTest, MatrixAssigmentAdditionTestSuccessful)
+{
+	Matrix lmatrix{
+		{ 1, 6 },
+		{ 8, 9 }
+	};
+	const Matrix rmatrix{
+		{ 1, 6 },
+		{ 8, 9 },
+	};
+
+	lmatrix += rmatrix;
+	const Matrix expected{
+		{ 2, 12 },
+		{ 16, 18 }
+	};
+	EXPECT_THAT(lmatrix, IsEqualMatrix(expected));
+}
+TEST(MatrixAdditionTest, MatrixSelfAssigmentAdditionTestSuccessful)
+{
+	Matrix lmatrix{
+		{ 1, 6 },
+		{ 8, 9 }
+	};
+
+	lmatrix += lmatrix;
+	const Matrix expected{
+		{ 2, 12 },
+		{ 16, 18 }
+	};
+	EXPECT_THAT(lmatrix, IsEqualMatrix(expected));
+}
+TEST(MatrixAdditionTest, EmptyMatrixAssigmentAdditionTestSuccessful)
+{
+	Matrix lmatrix;
+	const Matrix rmatrix;
+
+	lmatrix += rmatrix;
+	const Matrix expected;
+	EXPECT_THAT(lmatrix, IsEqualMatrix(expected));
+}
+TEST(MatrixAdditionTest, EmptyMatrixSelfAssigmentAdditionTestSuccessful)
+{
+	Matrix lmatrix;
+	lmatrix += lmatrix;
+	const Matrix expected;
+	EXPECT_THAT(lmatrix, IsEqualMatrix(expected));
+}
+TEST(MatrixAdditionTest, DifferentMatrixAssigmentAdditionTestUnsuccessful)
+{
+	Matrix lmatrix{
+		{ 1, 6 },
+		{ 8, 9 }
+	};
+
+	const Matrix rmatrix{
+		{ 1, 6, 10, 12, 20, 40, 0 },
+		{ 8, 9, 10, 12, 20, 40, 0 }
+	};
+
+	EXPECT_THROW({(void)(lmatrix += rmatrix);}, std::length_error);
 }
 
 TEST(MatrixAdditionTest, MatrixSubtractionTestSuccessful)
@@ -620,4 +741,381 @@ TEST(MatrixAdditionTest, MatrixSelfSubtractionTestSuccessful)
 		{ 0, 0 }
 	};
 	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixAdditionTest, EmptyMatrixSelfSubtractionTestSuccessful)
+{
+	const Matrix lmatrix;
+	const Matrix result = lmatrix - lmatrix;
+	const Matrix expected;
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixAdditionTest, DifferentMatrixesSubtractionTestUnsuccessful)
+{
+	const Matrix lmatrix{
+		{ 1, 6 },
+		{ 8, 9 }
+	};
+	const Matrix rmatrix{
+		{ 0, 0, 1 },
+		{ 0, 0, 1 }
+	};
+	EXPECT_THROW({(void)(lmatrix - rmatrix);}, std::length_error);
+}
+TEST(MatrixAdditionTest, MatrixAssigmentSubtractionTestSuccessful)
+{
+	Matrix lmatrix{
+		{ 1, 6 },
+		{ 8, 9 }
+	};
+	const Matrix rmatrix{
+		{ 2, 8 },
+		{ 6, 7 }
+	};
+	lmatrix -= rmatrix;
+	const Matrix expected{
+		{ -1, -2 },
+		{ 2, 2 }
+	};
+	EXPECT_THAT(lmatrix, IsEqualMatrix(expected));
+}
+TEST(MatrixAdditionTest, MatrixSelfAssigmentSubtractionTestSuccessful)
+{
+	Matrix lmatrix{
+		{ 1, 6 },
+		{ 8, 9 }
+	};
+	lmatrix -= lmatrix;
+	const Matrix expected{
+		{ 0, 0 },
+		{ 0, 0 }
+	};
+	EXPECT_THAT(lmatrix, IsEqualMatrix(expected));
+}
+TEST(MatrixAdditionTest, EmptyMatrixSelfAssigmentSubtractionTestSuccessful)
+{
+	Matrix lmatrix;
+	lmatrix -= lmatrix;
+	const Matrix expected;
+	EXPECT_THAT(lmatrix, IsEqualMatrix(expected));
+}
+TEST(MatrixAdditionTest, DifferentMatrixesAssigmentSubtractionTestUnsuccessful)
+{
+	Matrix lmatrix{
+		{ 1, 6 },
+		{ 8, 9 }
+	};
+	const Matrix rmatrix{
+		{ 0, 0, 1 },
+		{ 0, 0, 1 }
+	};
+	EXPECT_THROW({(void)(lmatrix -= rmatrix);}, std::length_error);
+}
+
+TEST(MatrixScalarMultiplication, ScalarMultiplicationTestSuccessful)
+{
+	const Matrix lmatrix{
+		{ 1, 6 },
+		{ 8, 9 }
+	};
+	const Matrix result{lmatrix * 2.0};
+	const Matrix expected{
+		{ 2, 12 },
+		{ 16, 18 }
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixScalarMultiplication, EmptyMatrixeScalarMultiplicationTestSuccessful)
+{
+	const Matrix lmatrix;
+	const Matrix result{lmatrix * 2};
+	const Matrix expected;
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixScalarDivision, MatrixScalarDivisionTestSuccessful)
+{
+	const Matrix lmatrix{
+		{ 1, 6 },
+		{ 8, 9 }
+	};
+	const Matrix result{lmatrix / 2};
+	const Matrix expected{
+		{ 0.5, 3 },
+		{ 4, 4.5 }
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixScalarDivision, EmptyMatrixScalarDivisionTestSuccessful)
+{
+	const Matrix lmatrix;
+	const Matrix result{lmatrix / 2};
+	const Matrix expected;
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixScalarAddition, MatrixScalarAdditionTestSuccessful)
+{
+	const Matrix lmatrix{
+		{ 1, 6 },
+		{ 8, 9 }
+	};
+	const Matrix result{lmatrix + 2};
+	const Matrix expected{
+		{ 3, 8 },
+		{ 10, 11 }
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixScalarAddition, EmptyMatrixScalarAdditionTestSuccessful)
+{
+	const Matrix lmatrix;
+	const Matrix result{lmatrix + 2};
+	const Matrix expected;
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixScalarSubtraction, MatrixScalarSubtractionTestSuccessful)
+{
+	const Matrix lmatrix{
+		{ 1, 6 },
+		{ 8, 9 }
+	};
+	const Matrix result{lmatrix - 2};
+	const Matrix expected{
+		{ -1, 4 },
+		{ 6, 7 }
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixScalarSubtraction, EmptyMatrixScalarSubtractionTestSuccessful)
+{
+	const Matrix lmatrix;
+	const Matrix result{lmatrix - 2};
+	const Matrix expected;
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+
+TEST(MatrixNegative, MatrixeNegativeTestSuccessful)
+{
+	const Matrix lmatrix{
+		{ 1, -10 },
+		{ -7, 15 }
+	};
+	const Matrix result{-lmatrix};
+	const Matrix expected{
+		{ -1, 10 },
+		{ 7, -15 }
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixNegative, EmptyMatrixeNegativeTestSuccessful)
+{
+	const Matrix lmatrix;
+	const Matrix result{-lmatrix};
+	const Matrix expected;
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixNegative, MatrixeChainedNegativeTestSuccessful)
+{
+	const Matrix lmatrix{
+		{ 1, -10 },
+		{ -7, 15 }
+	};
+	const Matrix result{- - -lmatrix};
+	const Matrix expected{
+		{ -1, 10 },
+		{ 7, -15 }
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+
+TEST(MatrixSimpleOperations, MatrixChainedOperations_1)
+{
+	const Matrix matrix1{
+		{ 1, 7 },
+		{ 6, 8 }
+	};
+	const Matrix matrix2{
+		{ -3, 6 },
+		{ 10, 2.5 }
+	};
+
+	const Matrix result{matrix1 * 8 + matrix2 * 4};
+	const Matrix expected{
+		{ -4, 80 },
+		{ 88, 74 }
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixSimpleOperations, MatrixChainedOperations_2)
+{
+	const Matrix matrix1{
+		{ 1, 7 },
+		{ 6, 8 }
+	};
+	const Matrix matrix2{
+		{ -3, 6 },
+		{ 10, 2.5 }
+	};
+	const Matrix matrix3{
+		{ 1, 0 },
+		{ 0, 1 }
+	};
+
+	const Matrix result{matrix3 - matrix1 * 9  + 10 + matrix2 * 4};
+	const Matrix expected{
+		{ -10, -29 },
+		{ -4, -51 }
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixSimpleOperations, MatrixChainedOperations_3)
+{
+	const Matrix matrix1{
+		{ 1, 7 },
+		{ 6, 8 }
+	};
+	const Matrix matrix2{
+		{ -3, 6 },
+		{ 10, 2.5 }
+	};
+
+	const Matrix result{-matrix1 / 4 + matrix1 + matrix2};
+	const Matrix expected{
+		{ -2.25, 11.25 },
+		{ 14.5, 8.5 }
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixSimpleOperations, MatrixChainedOperations_4)
+{
+	const Matrix matrix1{
+		{ 1, 7 },
+		{ 6, 8 }
+	};
+	const Matrix matrix2{
+		{ -3, 6 },
+		{ 10, 2.5 }
+	};
+
+	const Matrix result{matrix1 * matrix2 * 10 - 5};
+	const Matrix expected{
+		{ 665, 230 },
+		{ 615, 555 }
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixSimpleOperations, MatrixChainedOperations_5)
+{
+	const Matrix matrix1{
+		{ 1, 7 },
+		{ 6, 8 }
+	};
+	const Matrix matrix2{
+		{ -3, 6 },
+		{ 10, 2.5 }
+	};
+
+	const Matrix result{matrix1 * 10 * matrix2 * 10 - 5};
+	const Matrix expected{
+		{ 6695, 2345 },
+		{ 6195, 5595 }
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixSimpleOperations, MatrixChainedOperations_6)
+{
+	const Matrix matrix1{
+		{ 1 },
+		{ 6 }
+	};
+	const Matrix matrix2{
+		{ -3, 6 },
+		{ 10, 2.5 }
+	};
+
+	const Matrix result{(matrix1 * 10).Transpose() * matrix2 * 10 - 5};
+	const Matrix expected{
+		{ 5695, 2095 },
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixSimpleOperations, MatrixChainedOperations_7)
+{
+	Matrix matrix1{
+		{ 1 },
+		{ 6 }
+	};
+	const Matrix matrix2{
+		{ -3, 6 },
+		{ 10, 2.5 }
+	};
+
+	const Matrix result{(matrix1.SetAll(0) * 10).Transpose() * matrix2 * 10 - 5};
+	const Matrix expected{
+		{ -5, -5 },
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+TEST(MatrixSimpleOperations, MatrixChainedOperations_8)
+{
+	const Matrix matrix1{
+		{ 1, 10 },
+		{ 6, 0 }
+	};
+	const Matrix matrix2{
+		{ -3, 6 },
+		{ 10, 2.5 }
+	};
+
+	const Matrix result{matrix1.Transpose().Multiply(matrix2) * matrix2};
+	const Matrix expected{
+		{ 369, 72 },
+		{ -300, 600 }
+	};
+	EXPECT_THAT(result, IsEqualMatrix(expected));
+}
+
+TEST(MatrixEqualityCheckerTest, EqualMatrixEqualityCheckerTest)
+{
+	const Matrix matrix1{
+		{ 1, 10 },
+		{ 6, 0 }
+	};
+	const Matrix matrix2{
+		{ 1, 10 },
+		{ 6, 0 }
+	};
+	EXPECT_TRUE(matrix1.IsEqualTo(matrix2));
+}
+TEST(MatrixEqualityCheckerTest, NonEqualMatrixEqualityCheckerTest)
+{
+	const Matrix matrix1{
+		{ 1, 10 },
+		{ 6, 0 }
+	};
+	const Matrix matrix2{
+		{ 0, 11 },
+		{ 6, 1 }
+	};
+	EXPECT_FALSE(matrix1.IsEqualTo(matrix2));
+}
+TEST(MatrixEqualityCheckerTest, DifferentDimensionsMatrixEqualityCheckerTest_1)
+{
+	const Matrix matrix1{
+		{ 1 },
+		{ 6 }
+	};
+	const Matrix matrix2{
+		{ 0, 11 }
+	};
+	EXPECT_FALSE(matrix1.IsEqualTo(matrix2));
+}
+TEST(MatrixEqualityCheckerTest, DifferentDimensionsMatrixEqualityCheckerTest_2)
+{
+	const Matrix matrix1{
+		{ 1, 10 },
+		{ 6, 10 }
+	};
+	const Matrix matrix2{
+		{ 0, 11 }
+	};
+	EXPECT_FALSE(matrix1.IsEqualTo(matrix2));
 }
