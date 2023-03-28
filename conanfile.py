@@ -19,7 +19,7 @@ class MatrixlibConan(ConanFile):
 
     def source(self):
         git = tools.Git(folder="matrixlib")
-        git.clone("https://github.com/Pyshich/matrixlib")
+        git.clone("https://github.com/Psyhich/matrixlib")
 
     def requirements(self):
         self.requires("fmt/9.1.0")
