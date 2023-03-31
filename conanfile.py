@@ -3,7 +3,7 @@ from conans import ConanFile, CMake, tools
 
 class MatrixlibConan(ConanFile):
     name = "matrixlib"
-    version = "0.0.2"
+    version = "0.0.3"
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "shared": [True, False],

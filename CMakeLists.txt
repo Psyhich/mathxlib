@@ -11,7 +11,7 @@ option(ENABLE_TESTING "Enable the tests" ${PROJECT_IS_TOP_LEVEL})
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
 
 project(matrixlib
-	VERSION 0.0.2
+	VERSION 0.0.3
 	DESCRIPTION "Simple library for manipulations with matrixes"
 	HOMEPAGE_URL ""
 	LANGUAGES CXX C
@@ -73,12 +73,18 @@ target_compile_features(project_options
 add_library(matrixlib::project_options INTERFACE IMPORTED)
 add_library(matrixlib::project_warnings INTERFACE IMPORTED)
 
+# add_library(project_options INTERFACE IMPORTED)
+# add_library(project_warnings INTERFACE IMPORTED)
+
 add_subdirectory(configured_files)
-add_subdirectory(matrixes)
 
 if(ENABLE_TESTING)
 	include(CodeCoverage)
-	append_coverage_compiler_flags_to_target(matrixlib)
+	append_coverage_compiler_flags()
+endif()
+add_subdirectory(matrixes)
+
+if(ENABLE_TESTING)
 	enable_testing()
 	add_subdirectory(unit_tests)
 endif()

@@ -1,18 +1,32 @@
 #ifndef MATRIXES_H
 #define MATRIXES_H
 
-#include <functional>
-#include <array>
 #include <initializer_list>
 #include <stdexcept>
+#include <type_traits>
 
 #include <fmt/format.h>
+
+template<typename T>
+concept MatrixT = std::is_default_constructible_v<T> &&
+	requires(T possibleMatrix)
+	{
+		// Constructors
+		new (&possibleMatrix) T{1};
+		new (&possibleMatrix) T{1, 1};
+
+		// Getters
+		{ possibleMatrix(1, 1) } -> std::convertible_to<const double&>;
+		{ possibleMatrix(1, 1) } -> std::convertible_to<double&>;
+	};
+
+namespace MxLib
+{
 
 class Matrix
 {
 public:
 	using size_t = std::size_t;
-	using MapFunc = std::function<void(double &value)>;
 
 	Matrix() noexcept = default;
 
@@ -27,7 +41,7 @@ public:
 		{
 			for(std::size_t colIndex = 0; colIndex < ColsCount; colIndex++)
 			{
-				Set(rowIndex, colIndex, initializer.begin()[rowIndex][colIndex]);
+				(*this)(rowIndex, colIndex) = initializer.begin()[rowIndex][colIndex];
 			}
 		}
 	}
@@ -42,21 +56,9 @@ public:
 
 	~Matrix() noexcept;
 
-	Matrix &Randomise(double startValue, double endValue);
-	void Print() const;
-	[[nodiscard]] Matrix Map(const MapFunc &func) const;
-	void MapInplace(const MapFunc &func);
-
-	[[nodiscard]] Matrix Transpose() const;
-	[[nodiscard]] Matrix Multiply(const Matrix &matrixToMultiply) const;
-	[[nodiscard]] Matrix Inverse() const;
-	[[nodiscard]] Matrix Adjoint() const;
-	[[nodiscard]] double Determinant() const;
-	[[nodiscard]] bool IsEqualTo(const Matrix &otherMatrix, double eps=DEFAULT_ACCURACY) const noexcept;
-
 	// Getters and setters
-	[[nodiscard]] constexpr inline size_t GetCols() const noexcept { return m_cols; }
-	[[nodiscard]] constexpr inline size_t GetRows() const noexcept { return m_rows; }
+	[[nodiscard]] constexpr inline size_t Cols() const noexcept { return m_cols; }
+	[[nodiscard]] constexpr inline size_t Rows() const noexcept { return m_rows; }
 
 	constexpr inline const double &operator()(size_t row, size_t col) const
 	{
@@ -68,53 +70,18 @@ public:
 		CheckBounds(row, col);
 		return m_values[CalculatePos(row, col)];
 	}
-	constexpr inline void Set(size_t row, size_t col, double value)
-	{
-		CheckBounds(row, col);
-		m_values[CalculatePos(row, col)] = value;
-	}
-	Matrix &SetAll(double valueToSet) noexcept;
-
-	// Operations with other matrixes
-	Matrix operator*(const Matrix &matrixToDotProduct) const;
-
-	Matrix operator+(const Matrix &matrixToAdd) const;
-	Matrix operator-(const Matrix &matrixToSubstract) const;
-	Matrix &operator+=(const Matrix &matrixToAdd);
-	Matrix &operator-=(const Matrix &matrixToSubstract);
-
-	// TODO: add scalar assigment operations
-	// Operations with scalar values
-	Matrix operator/(double numberToDivide) const;
-	Matrix operator*(double numberToMultiply) const;
-	Matrix operator+(double numberToAdd) const;
-	Matrix operator-(double numberToSubstract) const;
-
-	// Unaries
-	Matrix operator-() const;
 
 private:
 	void MoveData(Matrix &&matrixToMove) noexcept;
 	void CopyData(const Matrix& matrixToCopy);
 
-	inline void CheckDimensions(size_t requiredRows, size_t requiredColumns) const
-	{
-		if(GetCols() != requiredColumns)
-		{
-			throw std::length_error("Required columns not matched");
-		}
-		else if(GetRows() != requiredRows)
-		{
-			throw std::length_error("Required rows not matched");
-		}
-	}
 	constexpr inline void CheckBounds(const size_t row, const size_t col) const
 	{
-		if(row >= GetRows() || 
-			col >= GetCols())
+		if(row >= Rows() || 
+			col >= Cols())
 		{
 			throw std::out_of_range{
-				fmt::format("Reached out of bounds of matrix {}x{} with row: {} and col: {}", GetRows(), GetCols(), row, col)};
+				fmt::format("Reached out of bounds of matrix {}x{} with row: {} and col: {}", Rows(), Cols(), row, col)};
 		}
 	}
 
@@ -123,18 +90,13 @@ private:
 		return row * m_cols + col;
 	}
 
-	static double Random(double start, double end) noexcept;
-
-	[[nodiscard]] Matrix ConstructMinor(const size_t rowToExclude, const size_t colToExclude) const;
-	[[nodiscard]] double DeterminantByMinorExpansion() const;
-
-	static inline constexpr double DEFAULT_ACCURACY{1e-6};
-
 	size_t m_cols{ 0 };
 	size_t m_rows{ 0 };
 	size_t m_size{ 0 };
 
 	double *m_values{ nullptr };
 };
+
+}
 
 #endif

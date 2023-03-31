@@ -6,3 +6,4 @@ In CMake you can just use it as subfolder:
 ```cmake
 add_subfolder(<path_to_directory>)
 ```
+
