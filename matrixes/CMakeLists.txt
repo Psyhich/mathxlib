@@ -11,10 +11,12 @@ target_link_libraries(matrixlib
 		project_warnings
 )
 target_include_directories(matrixlib 
-	PUBLIC
-		include/
 	PRIVATE
+		include
 		"${CMAKE_BINARY_DIR}/configured_files/include"
+)
+target_include_interface_directories(matrixlib
+	include
 )
 set_target_properties(matrixlib
 	PROPERTIES

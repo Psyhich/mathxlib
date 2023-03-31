@@ -1,6 +1,7 @@
-#include "unittest_common.h"
-#include "matrix_algorithms.h"
 #include <stdexcept>
+
+#include "unittest_common.h"
+#include "algorithms.h"
 
 using namespace MxLib;
 using namespace MxLib::algo;

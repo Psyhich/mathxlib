@@ -7,7 +7,7 @@
 
 #include <fmt/format.h>
 
-#include "matrix_operations.h"
+#include "operations.h"
 
 
 namespace MxLib::algo

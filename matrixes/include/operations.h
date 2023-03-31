@@ -3,7 +3,7 @@
 
 #include <random>
 
-#include "matrixes.h"
+#include "matrix.h"
 
 namespace MxLib::algo
 {

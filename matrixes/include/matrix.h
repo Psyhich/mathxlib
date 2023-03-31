@@ -1,5 +1,5 @@
-#ifndef MATRIXES_H
-#define MATRIXES_H
+#ifndef MATRIX_H
+#define MATRIX_H
 
 #include <initializer_list>
 #include <stdexcept>
@@ -99,4 +99,4 @@ private:
 
 }
 
-#endif
+#endif // MATRIX_H

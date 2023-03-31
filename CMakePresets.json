@@ -1,0 +1,55 @@
+{
+  "version": 5,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 24,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "develop",
+      "displayName": "Lib development preset",
+      "description": "Default build for library development with unit tests included",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/",
+      "cacheVariables": {
+        "ENABLE_TESTING": "ON",
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "develop",
+      "displayName": "Lib development preset",
+      "description": "Default build for library development with unit tests included",
+      "configurePreset": "develop",
+	  "jobs": 8,
+	  "targets": "matrix_tests",
+	  "configuration": "Debug"
+    },
+    {
+      "name": "coverage",
+      "displayName": "Create HTML coverage report",
+      "description": "Creates HTML coverage report by running unit tests",
+      "configurePreset": "develop",
+	  "jobs": 8,
+	  "targets": "generate_html_report",
+	  "configuration": "Debug"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "develop_tests",
+      "output": {"outputOnFailure": true},
+      "execution": {
+		  "noTestsAction": "error",
+		  "stopOnFailure": true,
+		  "jobs": 8
+	  },
+      "configurePreset": "develop",
+	  "configuration": "Debug"
+    }
+  ]
+}
+

@@ -6,7 +6,7 @@
 #include <fmt/color.h>
 
 #include "unittest_common.h"
-#include "matrix_operations.h"
+#include "operations.h"
 
 using namespace MxLib;
 using namespace MxLib::algo;
