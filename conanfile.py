@@ -44,7 +44,7 @@ class MatrixlibConan(ConanFile):
             cmake_vars["ENABLE_TESTING"] = "FALSE"
 
         cmake = CMake(self)
-        cmake.configure(variables=cmake_vars)
+        cmake.configure()
         cmake.build()
 
     def package(self):
