@@ -29,7 +29,6 @@ class MatrixlibConan(ConanFile):
     def source(self):
         git = Git(self)
         git.clone("https://github.com/Psyhich/matrixlib.git", target=".")
-        git.checkout("conan_update")
 
     def requirements(self):
         self.requires("fmt/9.1.0")
@@ -54,7 +53,7 @@ class MatrixlibConan(ConanFile):
         cmake.build()
 
     def package(self):
-        self.copy("*.h", dst="matrixlib/", src="matrixes/include")
+        self.copy("*.h", dst="include/matrixlib/", src="matrixes/include")
         self.copy("*.dll", dst="bin", keep_path=False)
         self.copy("*.so", dst="lib", keep_path=False)
         self.copy("*.dylib", dst="lib", keep_path=False)
@@ -62,4 +61,4 @@ class MatrixlibConan(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = ["matrixlib"]
-        self.cpp_info.include = ["matrixlib"]
+        self.cpp_info.includedirs = ["include/"]
