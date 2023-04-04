@@ -1,6 +1,6 @@
-from conans import ConanFile, CMake
+from conans import ConanFile
 from conan.tools.scm import Git
-from conan.tools.cmake import CMake, cmake_layout
+from conan.tools.cmake import CMake, CMakeToolchain
 
 
 class MatrixlibConan(ConanFile):
@@ -21,7 +21,7 @@ class MatrixlibConan(ConanFile):
         "fPIC": True,
         "build_tests": False
     }
-    generators = "cmake_find_package_multi"
+    generators = "CMakeDeps"
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -30,19 +30,20 @@ class MatrixlibConan(ConanFile):
     def source(self):
         git = Git(self)
         git.clone("https://github.com/Psyhich/matrixlib.git", target=".")
+        git.checkout("conan_update")
 
     def requirements(self):
         self.requires("fmt/9.1.0")
         if self.options.build_tests:
             self.requires("gtest/1.12.1")
 
-    def build(self):
-        cmake_vars = {}
-        if self.options.build_tests:
-            cmake_vars["ENABLE_TESTING"] = "TRUE"
-        else:
-            cmake_vars["ENABLE_TESTING"] = "FALSE"
+    def generate(self):
+        tc = CMakeToolchain(self)
+        tc.cache_variables["ENABLE_TESTING"] = self.options.build_tests
+        tc.cache_variables["ENABLE_DEVELOPER_MODE"] = False
+        tc.generate()
 
+    def build(self):
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
