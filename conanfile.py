@@ -46,12 +46,12 @@ class MatrixlibConan(ConanFile):
         tc.generate()
 
     def build(self):
+        cmake = CMakeDeps(self)
+        cmake.generate()
+
         cmake = CMake(self)
         cmake.configure(cli_args={"-Wno-dev"})
         cmake.build()
-
-        cmake = CMakeDeps(self)
-        cmake.generate()
 
     def package(self):
         self.copy("*.h", dst="matrixlib/", src="matrixes/include")
