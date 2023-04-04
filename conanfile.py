@@ -60,5 +60,5 @@ class MatrixlibConan(ConanFile):
         self.copy("*.a", dst="lib", keep_path=False)
 
     def package_info(self):
-        self.cpp_info.libs = ["matrixlib"]
+        self.cpp_info.libs = ["matrix"]
         self.cpp_info.includedirs = ["include/"]
