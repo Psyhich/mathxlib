@@ -47,7 +47,7 @@ class MatrixlibConan(ConanFile):
 
     def build(self):
         cmake = CMake(self)
-        cmake.configure(cli_args={"-Wno-dev", "-B", "build"})
+        cmake.configure(cli_args={"-Wno-dev"})
         cmake.build()
 
         cmake = CMakeDeps(self)
