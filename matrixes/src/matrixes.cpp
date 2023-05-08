@@ -86,6 +86,31 @@ Matrix::Matrix(size_t dimensions) :
 {
 }
 
+Matrix::Matrix(const double *data, size_t rows, size_t cols) :
+	Matrix{rows, cols}
+{
+	for(std::size_t row = 0; row < rows; ++row)
+	{
+		for(std::size_t col = 0; col < rows; ++col)
+		{
+			const std::size_t pos = CalculatePos(row, col); 
+			m_values[pos] = data[pos];
+		}
+	}
+}
+Matrix::Matrix(const double **data, size_t rows, size_t cols) :
+	Matrix{rows, cols}
+{
+	for(std::size_t row = 0; row < rows; ++row)
+	{
+		for(std::size_t col = 0; col < rows; ++col)
+		{
+			const std::size_t pos = CalculatePos(row, col); 
+			m_values[pos] = data[row][col];
+		}
+	}
+}
+
 Matrix::~Matrix() noexcept
 {
 	delete[](m_values);

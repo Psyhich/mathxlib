@@ -36,6 +36,9 @@ public:
 	Matrix(size_t rows, size_t cols);
 	explicit Matrix(size_t dimensions);
 
+	Matrix(const double *data, size_t rows, size_t cols);
+	Matrix(const double **data, size_t rows, size_t cols);
+
 	Matrix(const Matrix &matrixToCopy);
 	Matrix &operator=(const Matrix &matrixToCopy);
 
