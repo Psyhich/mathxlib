@@ -3,22 +3,10 @@
 
 #include <initializer_list>
 #include <stdexcept>
-#include <type_traits>
 
 #include <fmt/format.h>
 
-template<typename T>
-concept MatrixT = std::is_default_constructible_v<T> &&
-	requires(T possibleMatrix)
-	{
-		// Constructors
-		new (&possibleMatrix) T{1};
-		new (&possibleMatrix) T{1, 1};
-
-		// Getters
-		{ possibleMatrix(1, 1) } -> std::convertible_to<const double&>;
-		{ possibleMatrix(1, 1) } -> std::convertible_to<double&>;
-	};
+#include "matrix_concepts.hpp"
 
 namespace MxLib
 {
@@ -71,6 +59,20 @@ public:
 		return m_values[CalculatePos(row, col)];
 	}
 
+	[[nodiscard]] constexpr inline double *data()
+	{
+		return m_values;
+	}
+	[[nodiscard]] constexpr inline const double *data() const
+	{
+		return m_values;
+	}
+
+	[[nodiscard]] constexpr inline std::size_t size() const
+	{
+		return m_size;
+	}
+
 private:
 	void MoveData(Matrix &&matrixToMove) noexcept;
 	void CopyData(const Matrix& matrixToCopy);
@@ -96,6 +98,9 @@ private:
 
 	double *m_values{ nullptr };
 };
+
+static_assert(MatrixT<Matrix>, "Basic matrix type doesn't follow the MatrixT concept");
+static_assert(ContiniousStorageMatrix<Matrix>, "Basic matrix type doesn't follow the MatrixT concept");
 
 }
 

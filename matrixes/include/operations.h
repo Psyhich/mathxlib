@@ -61,7 +61,7 @@ namespace MxLib::algo
 			}
 			fmt::print(" |\n");
 		}
-		fmt::print(" |\n");
+		fmt::print("\n");
 	}
 
 	template<MatrixT lM, MatrixT rM>

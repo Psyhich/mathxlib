@@ -8,8 +8,9 @@ class MatrixlibConan(ConanFile):
     desciption = "MatrixLib - an easy matrix library"
     url = "https://github.com/Psyhich/matrixlib"
     license = "WTFPL"
+    generators = "cmake_find_package_multi"
 
-    version = "0.0.3"
+    version = "0.0.4"
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "shared": [True, False],
