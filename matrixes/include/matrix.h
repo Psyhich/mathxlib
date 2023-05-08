@@ -6,7 +6,7 @@
 
 #include <fmt/format.h>
 
-#include "matrix_concepts.hpp"
+#include "matrix_concepts.h"
 
 namespace MxLib
 {
