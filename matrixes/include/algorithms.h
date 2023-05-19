@@ -10,12 +10,11 @@
 
 #include "operations.h"
 
-
 namespace MxLib::algo
 {
 	using MapFunc = std::function<void(double &value)>;
 
-	template<MatrixT M>
+	template<ReadonlyMatrixT M>
 	[[nodiscard]] Matrix Map(const M& matrix, const MapFunc &func)
 	{
 		Matrix outMatrix{matrix};
@@ -42,7 +41,7 @@ namespace MxLib::algo
 		}
 	}
 
-	template<MatrixT M>
+	template<ReadonlyMatrixT M>
 	[[nodiscard]] Matrix Transpose(const M &matrixToTranspose)
 	{
 		Matrix transposed(matrixToTranspose.Cols(), matrixToTranspose.Rows());
@@ -56,7 +55,7 @@ namespace MxLib::algo
 		return transposed;
 	}
 
-	template<MatrixT M>
+	template<ReadonlyMatrixT M>
 	Matrix ConstructMinor(const M &matrixToSet, const size_t rowToExclude, const size_t colToExclude)
 	{
 		Matrix minor{matrixToSet.Rows() - 1, matrixToSet.Cols() - 1};
@@ -80,7 +79,7 @@ namespace MxLib::algo
 		return minor;
 	}
 
-	template<MatrixT M>
+	template<ReadonlyMatrixT M>
 	[[nodiscard]] double Determinant(const M &matrix)
 	{
 		IsSquareMatrix(matrix);
@@ -109,11 +108,10 @@ namespace MxLib::algo
 			{
 				for(size_t i = 0; i < currentMatrixRank; i++)
 				{
-					matrixesToCalculate.push(
-						{
-							currentMatrix(0, i) * (i % 2 == 0 ? 1 : -1),
-							ConstructMinor(currentMatrix, 0, i)
-						});
+					matrixesToCalculate.emplace(
+						currentMatrix(0, i) * (i % 2 == 0 ? 1 : -1),
+						ConstructMinor(currentMatrix, 0, i)
+					);
 				}
 			}
 		}
@@ -121,8 +119,7 @@ namespace MxLib::algo
 		return determinant;
 	}
 
-
-	template<MatrixT M>
+	template<ReadonlyMatrixT M>
 	[[nodiscard]] Matrix Adjoint(const M &matrix)
 	{
 		IsSquareMatrix(matrix);
@@ -143,7 +140,7 @@ namespace MxLib::algo
 		return Transpose(outMatrix);
 	}
 	
-	template<MatrixT M>
+	template<ReadonlyMatrixT M>
 	[[nodiscard]] Matrix Inverse(const M &matrixToInverse)
 	{
 		IsSquareMatrix(matrixToInverse);

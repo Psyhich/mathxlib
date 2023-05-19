@@ -53,12 +53,12 @@ public:
 
 	constexpr inline const double &operator()(size_t row, size_t col) const
 	{
-		CheckBounds(row, col);
+		CheckBounds(*this, row, col);
 		return m_values[CalculatePos(row, col)];
 	}
 	constexpr inline double &operator()(size_t row, size_t col)
 	{
-		CheckBounds(row, col);
+		CheckBounds(*this, row, col);
 		return m_values[CalculatePos(row, col)];
 	}
 
@@ -79,16 +79,6 @@ public:
 private:
 	void MoveData(Matrix &&matrixToMove) noexcept;
 	void CopyData(const Matrix& matrixToCopy);
-
-	constexpr inline void CheckBounds(const size_t row, const size_t col) const
-	{
-		if(row >= Rows() || 
-			col >= Cols())
-		{
-			throw std::out_of_range{
-				fmt::format("Reached out of bounds of matrix {}x{} with row: {} and col: {}", Rows(), Cols(), row, col)};
-		}
-	}
 
 	[[nodiscard]] constexpr inline size_t CalculatePos(size_t row, size_t col) const noexcept
 	{

@@ -27,7 +27,7 @@ namespace MxLib::algo
 		return matrixToRandomise;
 	}
 
-	template<MatrixT lM, MatrixT rM>
+	template<ReadonlyMatrixT lM, ReadonlyMatrixT rM>
 	inline void CheckDimensions(const lM &lMatrixToCheck, const rM& rMatrixToCheck)
 	{
 		if(lMatrixToCheck.Cols() != rMatrixToCheck.Cols())
@@ -40,16 +40,16 @@ namespace MxLib::algo
 		}
 	}
 
-	template<MatrixT M>
+	template<ReadonlyMatrixT M>
 	inline void IsSquareMatrix(const M &matrixToCheck)
 	{
 		if(matrixToCheck.Rows() != matrixToCheck.Cols())
 		{
-			throw std::runtime_error("Inverse is not implemented for non square matrixes");
+			throw std::runtime_error("This matrixe is not square one");
 		}
 	}
 
-	template<MatrixT M>
+	template<ReadonlyMatrixT M>
 	void Print(const M &matrixToPrint)
 	{
 		for (size_t i = 0; i < matrixToPrint.Rows(); i++)
@@ -64,7 +64,7 @@ namespace MxLib::algo
 		fmt::print("\n");
 	}
 
-	template<MatrixT lM, MatrixT rM>
+	template<ReadonlyMatrixT lM, ReadonlyMatrixT rM>
 	[[nodiscard]] Matrix Multiply(const lM &lMatrixToMultiply,
 		const rM &rMatrixToMultiply)
 	{
@@ -81,7 +81,7 @@ namespace MxLib::algo
 		return outMatrix;
 	}
 
-	template<MatrixT lM, MatrixT rM>
+	template<ReadonlyMatrixT lM, ReadonlyMatrixT rM>
 	[[nodiscard]] bool IsEqualTo(const lM &lMatrix,
 		const rM &rMatrix, double eps=DEFAULT_ACCURACY) noexcept
 	{
@@ -117,7 +117,7 @@ namespace MxLib::algo
 	}
 
 	// Custom operators
-	template<MatrixT lM, MatrixT rM>
+	template<ReadonlyMatrixT lM, ReadonlyMatrixT rM>
 	Matrix operator*(const lM &lMatrixToDotProduct, const rM &rMatrixToDotProduct)
 	{
 		if(lMatrixToDotProduct.Cols() != rMatrixToDotProduct.Rows())
@@ -143,7 +143,7 @@ namespace MxLib::algo
 		return out;
 	}
 
-	template<MatrixT lM, MatrixT rM>
+	template<ReadonlyMatrixT lM, ReadonlyMatrixT rM>
 	Matrix operator+(const lM &lMatrix, const rM &rMatrix)
 	{
 		CheckDimensions(lMatrix, rMatrix);
@@ -160,7 +160,7 @@ namespace MxLib::algo
 		return outMatrix;
 	}
 
-	template<MatrixT lM, MatrixT rM>
+	template<ReadonlyMatrixT lM, ReadonlyMatrixT rM>
 	Matrix operator-(const lM &lMatrix, const rM &rMatrix)
 	{
 		CheckDimensions(lMatrix, rMatrix);
@@ -177,7 +177,7 @@ namespace MxLib::algo
 		return outMatrix;
 	}
 
-	template<MatrixT lM, MatrixT rM>
+	template<MatrixT lM, ReadonlyMatrixT rM>
 	Matrix &operator+=(lM &lMatrix, const rM &rMatrix)
 	{
 		CheckDimensions(lMatrix, rMatrix);
@@ -192,7 +192,7 @@ namespace MxLib::algo
 		return lMatrix;
 	}
 
-	template<MatrixT lM, MatrixT rM>
+	template<MatrixT lM, ReadonlyMatrixT rM>
 	Matrix &operator-=(lM &lMatrix, const rM &rMatrix)
 	{
 		CheckDimensions(lMatrix, rMatrix);
@@ -209,7 +209,7 @@ namespace MxLib::algo
 
 	// TODO: add scalar assigment operations
 	// Operations with scalar values
-	template<MatrixT M>
+	template<ReadonlyMatrixT M>
 	Matrix operator/(const M &matrixToChange, double numberToDivide)
 	{
 		Matrix outMatrix = matrixToChange;
@@ -223,7 +223,7 @@ namespace MxLib::algo
 		return outMatrix;
 	}
 
-	template<MatrixT M>
+	template<ReadonlyMatrixT M>
 	Matrix operator*(const M &matrixToChange, double numberToMultiply)
 	{
 		Matrix outMatrix = matrixToChange;
@@ -237,7 +237,7 @@ namespace MxLib::algo
 		return outMatrix;
 	}
 
-	template<MatrixT M>
+	template<ReadonlyMatrixT M>
 	Matrix operator+(const M &matrixToChange, double numberToAdd)
 	{
 		Matrix outMatrix = matrixToChange;
@@ -251,7 +251,7 @@ namespace MxLib::algo
 		return outMatrix;
 	}
 
-	template<MatrixT M>
+	template<ReadonlyMatrixT M>
 	Matrix operator-(const M &matrixToChange, double numberToSubtract)
 	{
 		Matrix outMatrix = matrixToChange;
@@ -266,7 +266,7 @@ namespace MxLib::algo
 	}
 
 	// Unaries
-	template<MatrixT M>
+	template<ReadonlyMatrixT M>
 	Matrix operator-(const M& matrixToChange)
 	{
 		Matrix negativeMatrix{matrixToChange};
@@ -279,7 +279,6 @@ namespace MxLib::algo
 		}
 		return negativeMatrix;
 	}
-
 
 }
 

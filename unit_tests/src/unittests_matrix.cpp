@@ -1,7 +1,6 @@
-#include <stdexcept>
-
 #include "unittest_common.h"
 #include "algorithms.h"
+#include "matrix_view.h"
 
 using namespace MxLib;
 using namespace MxLib::algo;
@@ -161,4 +160,69 @@ TEST(MatrixBoundCheckTest, MatrixOutOfBoundGetterTestUnsuccessful)
 	};
 
 	EXPECT_THROW({ testMatrix(0, 2); }, std::out_of_range);
+}
+
+TEST(MatrixViewTest, BasicConstructionTestSuccessful)
+{
+	const Matrix viewedMatrix{
+		{ 1, 3, 4 },
+		{ -1, 3, 4 },
+		{ 3, 6, 7 }
+	};
+
+	const Matrix expected{
+		{ 1, 3 },
+		{ -1, 3 }
+	};
+
+	const MatrixView view{viewedMatrix, 0, 0, 2, 2};
+	EXPECT_THAT(view, IsEqualMatrix(expected));
+}
+TEST(MatrixViewTest, BasicConstructionWithOutOfBoundsTestUnsuccsessful)
+{
+	const Matrix viewedMatrix{
+		{ 1, 3, 4 },
+		{ -1, 3, 4 },
+		{ 3, 6, 7 }
+	};
+
+	const Matrix expected{
+		{ 1, 3 },
+		{ -1, 3 }
+	};
+
+	EXPECT_THROW({(void)MatrixView(viewedMatrix, 2, 2, 2, 2);}, std::out_of_range);
+}
+TEST(MatrixViewTest, BasicConstructionWithOutOfBoundsSizeTestUnsuccsessful)
+{
+	const Matrix viewedMatrix{
+		{ 1, 3, 4 },
+		{ -1, 3, 4 },
+		{ 3, 6, 7 }
+	};
+
+	const Matrix expected{
+		{ 1, 3 },
+		{ -1, 3 }
+	};
+
+	EXPECT_THROW({(void)MatrixView(viewedMatrix, 0, 0, 5, 2);}, std::out_of_range);
+}
+TEST(MatrixViewTest, RecursiveViewTestSuccessful)
+{
+	const Matrix viewedMatrix{
+		{ 1, 3, 4, 2 },
+		{ -1, 3, 4, 3 },
+		{ 3, 6, 7, 4 }
+	};
+
+	const MatrixView view1{viewedMatrix, 0, 0, 3, 3};
+	const MatrixView view2{view1, 1, 1, 2, 2};
+
+	const Matrix expected{
+		{ 3, 4 },
+		{ 6, 7 }
+	};
+
+	EXPECT_THAT(view2, IsEqualMatrix(expected));
 }
