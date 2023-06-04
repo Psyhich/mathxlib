@@ -1,3 +1,5 @@
+![Code Coverage](https://img.shields.io/badge/coverage-unknown-brightgreen)
+
 # MatrixLib - an easy matrix library
 Library that I wrote on a first term as single header file and continued developing it.
 
