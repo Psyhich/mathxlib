@@ -14,6 +14,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: Install build dependencies
+      run: sudo apt update && sudo apt install -y ninja-build
+
     - name: Install conan
       run: python3 -m pip install conan==1.59
 
