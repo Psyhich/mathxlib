@@ -21,6 +21,7 @@ target_link_system_libraries(matrix_tests
 		GTest::gmock
 )
 target_disable_clang_tidy(matrix_tests)
+target_disable_cpp_check(matrix_tests)
 
 gtest_discover_tests(matrix_tests)
 
@@ -32,5 +33,4 @@ setup_target_for_coverage_gcovr_xml(
 	EXCLUDE
 		"unit_tests/src/*"
 		"unit_tests/include/*"
-	# LCOV_ARGS "--no-external"
 )
