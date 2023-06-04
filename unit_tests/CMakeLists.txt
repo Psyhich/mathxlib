@@ -24,13 +24,13 @@ target_disable_clang_tidy(matrix_tests)
 
 gtest_discover_tests(matrix_tests)
 
-setup_target_for_coverage_lcov(
-	NAME generate_html_report
+setup_target_for_coverage_gcovr_xml(
+	NAME generate_report
 	EXECUTABLE ctest -j ${PROCESSOR_COUNT}
 	DEPENDENCIES matrix_tests
 	BASE_DIRECTORY "${CMAKE_SOURCE_DIR}/"
 	EXCLUDE
 		"unit_tests/src/*"
 		"unit_tests/include/*"
-	LCOV_ARGS "--no-external"
+	# LCOV_ARGS "--no-external"
 )

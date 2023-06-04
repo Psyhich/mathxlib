@@ -34,7 +34,7 @@
       "description": "Creates HTML coverage report by running unit tests",
       "configurePreset": "develop",
 	  "jobs": 8,
-	  "targets": "generate_html_report",
+	  "targets": "generate_report",
 	  "configuration": "Debug"
     }
   ],
