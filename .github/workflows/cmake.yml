@@ -1,0 +1,45 @@
+name: CMake
+
+on:
+  push:
+    branches: [ "dev" ]
+  pull_request:
+    branches: [ "dev" ]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Install conan
+      run: python3 -m pip install conan==1.59
+
+    - name: Configure CMake
+      run: cmake --preset develop ./
+
+    - name: Build
+      run: cmake --build ./ --preset develop
+
+    - name: Test
+      run: ctest --preset develop_tests
+
+    - name: Coverage
+      run: cmake --build . --preset coverage
+      
+    - name: Update README
+      run: |
+        percentage=$(gcovr --xml build/generate_report.xml | grep line-rate | awk -F '"' '{print int($2 * 100)}')
+        badge="![Code Coverage](https://img.shields.io/badge/coverage-$percentage%25-brightgreen)"
+        sed -i "1s/^/$badge\n\n/" README.md
+    
+    - name: Commit changes
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git add README.md
+        git commit -m "Update README"
+        git push
+      
