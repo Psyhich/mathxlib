@@ -18,7 +18,10 @@ jobs:
       run: sudo apt update && sudo apt install -y ninja-build
 
     - name: Install conan
-      run: python3 -m pip install conan==1.59
+      run: python3 -m pip install conan==1.59 gcovr
+
+    - name: Configure conan
+      run: conan profile new default --detect
 
     - name: Configure CMake
       run: cmake --preset develop ./
