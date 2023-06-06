@@ -34,17 +34,16 @@ jobs:
     - name: Coverage
       run: cmake --build . --preset coverage
       
-    - name: Update README
-      run: |
-        export percentage=$(cat build/generate_report.xml | grep line-rate | awk -F '"' '{print int($2 * 100)}')
-        export badge=$(echo \![Code Coverage]\(https://img.shields.io/badge/coverage-$percentage%25-brightgreen\))
-        sed -i "1 s|.*|$badge|" README.md
+    - name: Extract coverage
+      run: echo "COVERAGE=$(cat build/generate_report.xml | grep line-rate | awk -F '"' '{print int($2 * 100)}')%" >> $GITHUB_ENV
     
-    - name: Commit changes
-      run: |
-        git config --global user.name "GitHub Actions"
-        git config --global user.email "actions@github.com"
-        git add README.md
-        git commit -m "Update README"
-        git push
+    - name: Create Awesome Badge
+      uses: schneegans/dynamic-badges-action@v1.6.0
+      with:
+        auth: ${{ secrets.GISTS_API_KEY }}
+        gistID: b7156fe3db753fc241ad820cfe0a3566
+        filename: dev_badge.json
+        label: Coverage
+        message: ${{ env.COVERAGE }}
+        color: grey
       
