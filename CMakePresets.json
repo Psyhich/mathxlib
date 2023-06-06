@@ -16,6 +16,18 @@
         "ENABLE_TESTING": "ON",
         "CMAKE_BUILD_TYPE": "Debug"
       }
+    },
+    {
+      "name": "release",
+      "displayName": "Ready to use library build",
+      "description": "Default build for library development with unit tests included",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/",
+      "cacheVariables": {
+        "ENABLE_TESTING": "OFF",
+        "CMAKE_BUILD_TYPE": "Release",
+		"ENABLE_DEVELOPER_MODE": "OFF"
+      }
     }
   ],
   "buildPresets": [
