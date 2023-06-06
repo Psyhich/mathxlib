@@ -36,9 +36,9 @@ jobs:
       
     - name: Update README
       run: |
-        percentage=$(gcovr --xml build/generate_report.xml | grep line-rate | awk -F '"' '{print int($2 * 100)}')
-        badge="![Code Coverage](https://img.shields.io/badge/coverage-$percentage%25-brightgreen)"
-        sed -i "1s/^/$badge\n\n/" README.md
+        export percentage=$(cat build/generate_report.xml | grep line-rate | awk -F '"' '{print int($2 * 100)}')
+        export badge=$(echo \![Code Coverage](https://img.shields.io/badge/coverage-$percentage%25-brightgreen))
+        sed -i "1 s/^.*$/$badge\n\n/" README.md
     
     - name: Commit changes
       run: |
