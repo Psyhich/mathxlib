@@ -18,18 +18,22 @@ public:
 
 	Matrix() noexcept = default;
 
-	template<size_t ColsCount>
-	explicit Matrix(const std::initializer_list<double[ColsCount]> &initializer) :
-		m_cols{ColsCount},
+	explicit Matrix(const std::initializer_list<std::initializer_list<double>> &initializer) :
+		m_cols{initializer.size() > 0 ? initializer.begin()[0].size() : 0},
 		m_rows{initializer.size()},
 		m_size{m_rows * m_cols},
-		m_values{new double[m_size]}
+		m_values{m_size > 0 ? new double[m_size] : nullptr}
 	{
 		for(std::size_t rowIndex = 0; rowIndex < m_rows; rowIndex++)
 		{
-			for(std::size_t colIndex = 0; colIndex < ColsCount; colIndex++)
+			if (initializer.begin()[rowIndex].size() != m_cols)
 			{
-				(*this)(rowIndex, colIndex) = initializer.begin()[rowIndex][colIndex];
+				throw std::out_of_range{"Matrix contains inconsistant amount of columns"};
+			}
+
+			for (std::size_t colIndex = 0; colIndex < m_cols; colIndex++)
+			{
+				(*this)(rowIndex, colIndex) = initializer.begin()[rowIndex].begin()[colIndex];
 			}
 		}
 	}

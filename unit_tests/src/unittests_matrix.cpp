@@ -70,7 +70,7 @@ TEST_F(MatrixConstructionTest, InitializerListConstructionTestSuccessful_2)
 TEST_F(MatrixConstructionTest, InitializerListConstructionTestSuccessful_3)
 {
 	const Matrix newMatrix{{}};
-	ASSERT_EQ(newMatrix.Rows(), 0);
+	ASSERT_EQ(newMatrix.Rows(), 1);
 	ASSERT_EQ(newMatrix.Cols(), 0);
 }
 TEST_F(MatrixConstructionTest, ByRankConstructionTestSuccessful)
