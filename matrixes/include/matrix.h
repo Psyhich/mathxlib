@@ -16,7 +16,7 @@ class Matrix
 public:
 	Matrix() noexcept = default;
 
-	Matrix(const std::initializer_list<std::initializer_list<double>> &initializer) :
+	explicit Matrix(const std::initializer_list<std::initializer_list<double>> &initializer) :
 		m_cols{initializer.size() > 0 ? initializer.begin()[0].size() : 0},
 		m_rows{initializer.size()},
 		m_size{m_rows * m_cols},
