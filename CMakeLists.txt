@@ -14,7 +14,7 @@ list(APPEND CMAKE_MODULE_PATH
 list(APPEND CMAKE_PREFIX_PATH "${CMAKE_CURRENT_BINARY_DIR}/")
 
 project(matrixlib
-	VERSION 0.0.5
+	VERSION 0.0.6
 	DESCRIPTION "Simple library for manipulations with matrixes"
 	HOMEPAGE_URL ""
 	LANGUAGES CXX C

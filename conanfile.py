@@ -10,7 +10,7 @@ class MatrixlibConan(ConanFile):
     license = "WTFPL"
     generators = "cmake_find_package_multi"
 
-    version = "0.0.5"
+    version = "0.0.6"
     settings = "os", "compiler", "build_type", "arch"
     options = {
         "shared": [True, False],

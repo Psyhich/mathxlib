@@ -2,27 +2,37 @@
 #define MATRIX_MINOR_H
 
 #include "matrix.h"
-#include "matrix_view.h"
+#include "view.h"
 
 namespace MxLib
 {
 
 template<ReadonlyMatrixT Viewed>
-class MatrixMinor
+class MinorView
 {
 public:
-	MatrixMinor(const Viewed &matrix, std::size_t row, std::size_t col) :
+	MinorView(const Viewed &matrix, std::size_t row, std::size_t col) :
 		m_viewedMatrix{matrix},
 		m_excludedRow{row},
 		m_excludedCol{col}
 	{
 		if(matrix.Rows() == 0)
 		{
-			throw std::out_of_range{fmt::format("Cannot take minor of matrix with rows count 0")};
+			throw std::out_of_range{"Cannot take minor of matrix with rows count 0"};
 		}
 		if(matrix.Cols() == 0)
 		{
-			throw std::out_of_range{fmt::format("Cannot take minor of matrix with cols count 0")};
+			throw std::out_of_range{"Cannot take minor of matrix with cols count 0"};
+		}
+		if (m_excludedRow >= matrix.Rows())
+		{
+			throw std::out_of_range{fmt::format(
+				"Cannot take minor by {} row from matrix that has {} rows", m_excludedRow, matrix.Rows())};
+		}
+		if (m_excludedCol >= matrix.Cols())
+		{
+			throw std::out_of_range{fmt::format(
+				"Cannot take minor by {} col from matrix that has {} cols", m_excludedCol, matrix.Cols())};
 		}
 	}
 
@@ -41,7 +51,7 @@ private:
 	const std::size_t m_excludedCol;
 };
 
-static_assert(ReadonlyMatrixT<MatrixMinor<Matrix>>);
+static_assert(ReadonlyMatrixT<MinorView<Matrix>>);
 }
 
 #endif // MATRIX_MINOR_H

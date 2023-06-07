@@ -71,14 +71,14 @@ Matrix &Matrix::operator=(Matrix &&matrixToMove) noexcept
 }
 
 // Simple constructors
-Matrix::Matrix(size_t rows, size_t cols) :
+Matrix::Matrix(std::size_t rows, std::size_t cols) :
 	m_cols{cols},
 	m_rows{rows},
 	m_size{rows * cols},
 	m_values{new double[rows * cols]}
 {
 }
-Matrix::Matrix(size_t dimensions) :
+Matrix::Matrix(std::size_t dimensions) :
 	m_cols{dimensions},
 	m_rows{dimensions},
 	m_size{dimensions * dimensions},
@@ -86,7 +86,7 @@ Matrix::Matrix(size_t dimensions) :
 {
 }
 
-Matrix::Matrix(const double *data, size_t rows, size_t cols) :
+Matrix::Matrix(const double *data, std::size_t rows, std::size_t cols) :
 	Matrix{rows, cols}
 {
 	for(std::size_t row = 0; row < rows; ++row)
@@ -98,7 +98,7 @@ Matrix::Matrix(const double *data, size_t rows, size_t cols) :
 		}
 	}
 }
-Matrix::Matrix(const double **data, size_t rows, size_t cols) :
+Matrix::Matrix(const double **data, std::size_t rows, std::size_t cols) :
 	Matrix{rows, cols}
 {
 	for(std::size_t row = 0; row < rows; ++row)
@@ -115,4 +115,15 @@ Matrix::~Matrix() noexcept
 {
 	delete[](m_values);
 }
+
+Matrix Matrix::Identity(std::size_t rank)
+{
+	Matrix identityMatrix{rank};
+	for ( std::size_t i = 0; i < rank; ++i)
+	{
+		identityMatrix(i, i) = 1;
+	}
+	return identityMatrix;
+}
+
 }

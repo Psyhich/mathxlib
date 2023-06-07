@@ -9,6 +9,7 @@
 #include <fmt/format.h>
 
 #include "operations.h"
+#include "minor.h"
 
 namespace MxLib::algo
 {
@@ -56,36 +57,12 @@ namespace MxLib::algo
 	}
 
 	template<ReadonlyMatrixT M>
-	Matrix ConstructMinor(const M &matrixToSet, const size_t rowToExclude, const size_t colToExclude)
-	{
-		Matrix minor{matrixToSet.Rows() - 1, matrixToSet.Cols() - 1};
-		size_t rowIndex{0};
-		for (size_t row = 0; row < matrixToSet.Rows(); row++)
-		{
-			if(row != rowToExclude)
-			{
-				size_t colIndex{0};
-				for (size_t col = 0; col < matrixToSet.Cols(); col++)
-				{
-					if (col != colToExclude)
-					{
-						minor(rowIndex, colIndex) = matrixToSet(row, col);
-						++colIndex;
-					}
-				}
-				++rowIndex;
-			}
-		}
-		return minor;
-	}
-
-	template<ReadonlyMatrixT M>
 	[[nodiscard]] double Determinant(const M &matrix)
 	{
 		IsSquareMatrix(matrix);
 
 		std::stack<std::pair<double, Matrix>> matrixesToCalculate;
-		matrixesToCalculate.push({ 1, matrix });
+		matrixesToCalculate.emplace(1, Matrix{matrix});
 
 		double determinant = 0;
 		while(!matrixesToCalculate.empty())
@@ -106,11 +83,11 @@ namespace MxLib::algo
 			}
 			else
 			{
-				for(size_t i = 0; i < currentMatrixRank; i++)
+				for(std::size_t i = 0; i < currentMatrixRank; i++)
 				{
 					matrixesToCalculate.emplace(
 						currentMatrix(0, i) * (i % 2 == 0 ? 1 : -1),
-						ConstructMinor(currentMatrix, 0, i)
+						MinorView(currentMatrix, 0, i)
 					);
 				}
 			}
@@ -130,7 +107,7 @@ namespace MxLib::algo
 		{
 			for (size_t currCol = 0; currCol < rank; currCol++)
 			{
-				Matrix minor = ConstructMinor(matrix, currRow, currCol);
+				const MinorView minor{matrix, currRow, currCol};
 				// After we constructed minor calculating it's cofactor and assigning
 				// it to outMatrix
 				outMatrix(currRow, currCol) = Determinant(minor) * ((currRow + currCol) % 2 == 0 ? 1 : -1);

@@ -14,11 +14,9 @@ namespace MxLib
 class Matrix
 {
 public:
-	using size_t = std::size_t;
-
 	Matrix() noexcept = default;
 
-	explicit Matrix(const std::initializer_list<std::initializer_list<double>> &initializer) :
+	Matrix(const std::initializer_list<std::initializer_list<double>> &initializer) :
 		m_cols{initializer.size() > 0 ? initializer.begin()[0].size() : 0},
 		m_rows{initializer.size()},
 		m_size{m_rows * m_cols},
@@ -37,11 +35,27 @@ public:
 			}
 		}
 	}
-	Matrix(size_t rows, size_t cols);
-	explicit Matrix(size_t dimensions);
+	Matrix(std::size_t rows, std::size_t cols);
+	explicit Matrix(std::size_t dimensions);
 
-	Matrix(const double *data, size_t rows, size_t cols);
-	Matrix(const double **data, size_t rows, size_t cols);
+	template<ReadonlyMatrixT M>
+	explicit Matrix(const M &matrixToCopy) :
+		m_cols{matrixToCopy.Cols()},
+		m_rows{matrixToCopy.Rows()},
+		m_size{m_cols * m_rows},
+		m_values{m_size > 0 ? new double[m_size] : nullptr}
+	{
+		for (std::size_t row = 0; row < m_rows; ++row)
+		{
+			for (std::size_t col = 0; col < m_cols; ++col)
+			{
+				(*this)(row, col) = matrixToCopy(row, col);
+			}
+		}
+	}
+
+	Matrix(const double *data, std::size_t rows, std::size_t cols);
+	Matrix(const double **data, std::size_t rows, std::size_t cols);
 
 	Matrix(const Matrix &matrixToCopy);
 	Matrix &operator=(const Matrix &matrixToCopy);
@@ -52,15 +66,15 @@ public:
 	~Matrix() noexcept;
 
 	// Getters and setters
-	[[nodiscard]] constexpr inline size_t Cols() const noexcept { return m_cols; }
-	[[nodiscard]] constexpr inline size_t Rows() const noexcept { return m_rows; }
+	[[nodiscard]] constexpr inline std::size_t Cols() const noexcept { return m_cols; }
+	[[nodiscard]] constexpr inline std::size_t Rows() const noexcept { return m_rows; }
 
-	constexpr inline const double &operator()(size_t row, size_t col) const
+	constexpr inline const double &operator()(std::size_t row, std::size_t col) const
 	{
 		CheckBounds(*this, row, col);
 		return m_values[CalculatePos(row, col)];
 	}
-	constexpr inline double &operator()(size_t row, size_t col)
+	constexpr inline double &operator()(std::size_t row, std::size_t col)
 	{
 		CheckBounds(*this, row, col);
 		return m_values[CalculatePos(row, col)];
@@ -80,24 +94,26 @@ public:
 		return m_size;
 	}
 
+	static Matrix Identity(std::size_t rank);
+
 private:
 	void MoveData(Matrix &&matrixToMove) noexcept;
 	void CopyData(const Matrix& matrixToCopy);
 
-	[[nodiscard]] constexpr inline size_t CalculatePos(size_t row, size_t col) const noexcept
+	[[nodiscard]] constexpr inline std::size_t CalculatePos(std::size_t row, std::size_t col) const noexcept
 	{
 		return row * m_cols + col;
 	}
 
-	size_t m_cols{ 0 };
-	size_t m_rows{ 0 };
-	size_t m_size{ 0 };
+	std::size_t m_cols{ 0 };
+	std::size_t m_rows{ 0 };
+	std::size_t m_size{ 0 };
 
 	double *m_values{ nullptr };
 };
 
 static_assert(MatrixT<Matrix>, "Basic matrix type doesn't follow the MatrixT concept");
-static_assert(ContiniousStorageMatrix<Matrix>, "Basic matrix type doesn't follow the MatrixT concept");
+static_assert(ContiniousStorageMatrix<Matrix>, "Basic matrix type doesn't follow the ContiniousStorageMatrix concept");
 
 }
 

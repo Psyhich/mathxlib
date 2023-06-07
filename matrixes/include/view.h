@@ -50,6 +50,66 @@ private:
 	const M &m_viewedMatrix;
 };
 
+template<ReadonlyMatrixT M>
+class RowView
+{
+public:
+	RowView(const M &viewedMatrix, std::size_t viewedRow) :
+		m_viewedMatrix{viewedMatrix},
+		m_viewedRow{viewedRow}
+	{
+		if (viewedRow >= viewedMatrix.Rows())
+		{
+			throw std::out_of_range{fmt::format(
+				"Cannot take view of row {} of matrix that has {} rows", viewedRow, viewedMatrix.Rows())};
+		}
+	}
+
+	double operator[](std::size_t colToView) const
+	{
+		return m_viewedMatrix(m_viewedRow, colToView);
+	}
+
+	[[nodiscard]] inline std::size_t size() const
+	{
+		return m_viewedMatrix.Cols();
+	}
+
+private:
+	const M &m_viewedMatrix;
+	std::size_t m_viewedRow;
+};
+
+template<ReadonlyMatrixT M>
+class ColView
+{
+public:
+	ColView(const M &viewedMatrix, std::size_t viewedCol) :
+		m_viewedMatrix{viewedMatrix},
+		m_viewedCol{viewedCol}
+	{
+		if (viewedCol >= viewedMatrix.Rows())
+		{
+			throw std::out_of_range{fmt::format(
+				"Cannot take view of row {} of matrix that has {} rows", viewedCol, viewedMatrix.Rows())};
+		}
+	}
+
+	double operator[](std::size_t rowToView) const 
+	{
+		return m_viewedMatrix(rowToView, m_viewedCol);
+	}
+
+	[[nodiscard]] inline std::size_t size() const
+	{
+		return m_viewedMatrix.Cols();
+	}
+
+private:
+	const M &m_viewedMatrix;
+	std::size_t m_viewedCol;
+};
+
 static_assert(ReadonlyMatrixT<MatrixView<Matrix>>);
 }
 

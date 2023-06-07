@@ -1,6 +1,7 @@
 #include "unittest_common.h"
 #include "algorithms.h"
-#include "matrix_view.h"
+#include "view.h"
+#include "minor.h"
 
 using namespace MxLib;
 using namespace MxLib::algo;
@@ -225,4 +226,152 @@ TEST(MatrixViewTest, RecursiveViewTestSuccessful)
 	};
 
 	EXPECT_THAT(view2, IsEqualMatrix(expected));
+}
+
+TEST(MatrixMinorViewTest, BasicViewTestSuccessful_1)
+{
+	const Matrix viewedMatrix{
+		{ 1, 3, 4, 2 },
+		{ -1, 3, 4, 3 },
+		{ 3, 6, 7, 4 }
+	};
+
+	const Matrix expected{
+		{ 3, 4, 3 },
+		{ 6, 7, 4 }
+	};
+
+	const MinorView minor{viewedMatrix, 0, 0};
+
+	EXPECT_THAT(minor, IsEqualMatrix(expected));
+}
+TEST(MatrixMinorViewTest, BasicViewTestSuccessful_2)
+{
+	const Matrix viewedMatrix{
+		{ 1, 3, 4, 2 },
+		{ -1, 3, 4, 3 },
+		{ 3, 6, 7, 4 }
+	};
+
+	const Matrix expected{
+		{ 1, 3, 2 },
+		{ 3, 6, 4 }
+	};
+
+	const MinorView minor{viewedMatrix, 1, 2};
+
+	EXPECT_THAT(minor, IsEqualMatrix(expected));
+}
+TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnuccessful_1)
+{
+	const Matrix viewedMatrix{
+		{ 1, 3, 4, 2 },
+		{ -1, 3, 4, 3 },
+		{ 3, 6, 7, 4 }
+	};
+
+	EXPECT_THROW({ MinorView(viewedMatrix, 4, 5); }, std::out_of_range);
+}
+TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnuccessful_2)
+{
+	const Matrix viewedMatrix{
+		{ 1, 3, 4, 2 },
+		{ -1, 3, 4, 3 },
+		{ 3, 6, 7, 4 }
+	};
+
+	EXPECT_THROW({ MinorView(viewedMatrix, 0, 5); }, std::out_of_range);
+}
+TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnuccessful_3)
+{
+	const Matrix viewedMatrix{
+		{ 1, 3, 4, 2 },
+		{ -1, 3, 4, 3 },
+		{ 3, 6, 7, 4 }
+	};
+
+	EXPECT_THROW({ MinorView(viewedMatrix, 6, 0); }, std::out_of_range);
+}
+TEST(MatrixMinorViewTest, RecursiveViewTestSuccessful_1)
+{
+	const Matrix viewedMatrix{
+		{ 1, 3, 4, 2 },
+		{ -1, 3, 4, 3 },
+		{ 3, 6, 7, 4 }
+	};
+
+	const MinorView minor1{viewedMatrix, 0, 0};
+	const MinorView minor2{minor1, 0, 0};
+
+	const Matrix expected{
+		{ 7, 4 }
+	};
+
+	EXPECT_THAT(minor2, IsEqualMatrix(expected));
+}
+TEST(MatrixMinorViewTest, RecursiveViewTestSuccessful_2)
+{
+	const Matrix viewedMatrix{
+		{ 1, 3, 4, 2, 6, 42 },
+		{ -1, 3, 4, 3, 8, 42 },
+		{ 3, 6, 7, 4, 4, 42 },
+		{ -1, 3, 4, 3, 8, 42 },
+		{ 1, 3, 4, 2, 6, 42 }
+	};
+
+	const MinorView minor1{viewedMatrix, 0, 0};
+	const MinorView minor2{minor1, 1, 1};
+	const MinorView minor3{minor2, 2, 2};
+	const MinorView minor4{minor3, 0, 0};
+
+	const Matrix expected{
+		{ 3, 42 },
+	};
+
+	EXPECT_THAT(minor4, IsEqualMatrix(expected));
+}
+TEST(MatrixMinorViewTest, RecursiveViewWithOutOfBoundsTestUnsuccessful)
+{
+	const Matrix viewedMatrix{
+		{ 1, 3, 4, 2 },
+		{ -1, 3, 4, 3 },
+		{ 3, 6, 7, 4 }
+	};
+
+	const MinorView minor1{viewedMatrix, 0, 0};
+	EXPECT_THROW({ MinorView(minor1, 5, 2); }, std::out_of_range);
+}
+
+TEST(MatrixRowViewTest, BasicViewTest)
+{
+	const Matrix viewedMatrix{
+		{ 1, 3, 4 },
+		{ -1, 3, 4 },
+		{ 3, 6, 7 }
+	};
+
+	const RowView rowView{viewedMatrix, 0};
+	ASSERT_THAT(rowView.size(), viewedMatrix.Cols());
+
+	for (std::size_t col = 0; col < rowView.size(); ++col)
+	{
+		ASSERT_THAT(rowView[col], viewedMatrix(0, col));
+	}
+}
+
+TEST(MatrixColViewTest, BasicViewTest)
+{
+	const Matrix viewedMatrix{
+		{ 1, 3, 4 },
+		{ -1, 3, 4 },
+		{ 3, 6, 7 }
+	};
+
+	const ColView rowView{viewedMatrix, 0};
+	ASSERT_THAT(rowView.size(), viewedMatrix.Rows());
+
+	for (std::size_t row = 0; row < rowView.size(); ++row)
+	{
+		ASSERT_THAT(rowView[row], viewedMatrix(row, 0));
+	}
 }
