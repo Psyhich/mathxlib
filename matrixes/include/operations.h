@@ -5,7 +5,7 @@
 
 #include "matrix.h"
 
-namespace MxLib::algo
+namespace MxLib
 {
 	static inline constexpr const double DEFAULT_ACCURACY{1e-6};
 
