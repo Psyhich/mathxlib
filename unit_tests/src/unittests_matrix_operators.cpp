@@ -9,7 +9,6 @@
 #include "operations.h"
 
 using namespace MxLib;
-using namespace MxLib::algo;
 
 MATCHER_P2(IsMatrixValuesInRange, rangeStart, rangeEnd, "")
 {
