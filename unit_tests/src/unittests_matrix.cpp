@@ -179,7 +179,7 @@ TEST(MatrixViewTest, BasicConstructionTestSuccessful)
 	const MatrixView view{viewedMatrix, 0, 0, 2, 2};
 	EXPECT_THAT(view, IsEqualMatrix(expected));
 }
-TEST(MatrixViewTest, BasicConstructionWithOutOfBoundsTestUnsuccsessful)
+TEST(MatrixViewTest, BasicConstructionWithOutOfBoundsTestUnsuccessful)
 {
 	const Matrix viewedMatrix{
 		{ 1, 3, 4 },
@@ -194,7 +194,7 @@ TEST(MatrixViewTest, BasicConstructionWithOutOfBoundsTestUnsuccsessful)
 
 	EXPECT_THROW({(void)MatrixView(viewedMatrix, 2, 2, 2, 2);}, std::out_of_range);
 }
-TEST(MatrixViewTest, BasicConstructionWithOutOfBoundsSizeTestUnsuccsessful)
+TEST(MatrixViewTest, BasicConstructionWithOutOfBoundsSizeTestUnsuccessful)
 {
 	const Matrix viewedMatrix{
 		{ 1, 3, 4 },
@@ -262,7 +262,7 @@ TEST(MatrixMinorViewTest, BasicViewTestSuccessful_2)
 
 	EXPECT_THAT(minor, IsEqualMatrix(expected));
 }
-TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnuccessful_1)
+TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnsuccessful_1)
 {
 	const Matrix viewedMatrix{
 		{ 1, 3, 4, 2 },
@@ -272,7 +272,7 @@ TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnuccessful_1)
 
 	EXPECT_THROW({ MinorView(viewedMatrix, 4, 5); }, std::out_of_range);
 }
-TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnuccessful_2)
+TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnsuccessful_2)
 {
 	const Matrix viewedMatrix{
 		{ 1, 3, 4, 2 },
@@ -282,7 +282,7 @@ TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnuccessful_2)
 
 	EXPECT_THROW({ MinorView(viewedMatrix, 0, 5); }, std::out_of_range);
 }
-TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnuccessful_3)
+TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnsuccessful_3)
 {
 	const Matrix viewedMatrix{
 		{ 1, 3, 4, 2 },
