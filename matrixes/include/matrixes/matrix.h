@@ -26,7 +26,7 @@ public:
 		{
 			if (initializer.begin()[rowIndex].size() != m_cols)
 			{
-				throw std::out_of_range{"Matrix contains inconsistant amount of columns"};
+				throw std::out_of_range{"Matrix contains inconsistent amount of columns"};
 			}
 
 			for (std::size_t colIndex = 0; colIndex < m_cols; colIndex++)
@@ -113,7 +113,7 @@ private:
 };
 
 static_assert(MatrixT<Matrix>, "Basic matrix type doesn't follow the MatrixT concept");
-static_assert(ContiniousStorageMatrix<Matrix>, "Basic matrix type doesn't follow the ContiniousStorageMatrix concept");
+static_assert(ContinuousStorageMatrix<Matrix>, "Basic matrix type doesn't follow the ContinuousStorageMatrix concept");
 
 }
 

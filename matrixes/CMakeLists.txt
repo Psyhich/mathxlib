@@ -1,24 +1,22 @@
-find_package(fmt CONFIG REQUIRED)
-
-add_library(matrixlib
+add_library(matrixes OBJECT
 	src/matrixes.cpp
+	src/algorithms.cpp
 )
-target_link_libraries(matrixlib
+
+target_link_libraries(matrixes
 	PUBLIC
-		fmt::fmt
+		fmt
 	PRIVATE
-		project_options
-		project_warnings
+		mathxlib_project_options
+		mathxlib_project_warnings
 )
-target_include_directories(matrixlib 
-	PRIVATE
+target_include_directories(matrixes 
+	PUBLIC
 		include
+	PRIVATE
 		"${CMAKE_BINARY_DIR}/configured_files/include"
 )
-target_include_interface_directories(matrixlib
-	include
-)
-set_target_properties(matrixlib
-	PROPERTIES
-		OUTPUT_NAME "matrix"
-)
+
+if(ENABLE_TESTING)
+	add_subdirectory(unit_tests)
+endif()

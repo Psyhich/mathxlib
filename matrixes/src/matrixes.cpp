@@ -8,7 +8,7 @@
 #include <stack>
 
 #include "internal_use_only/config.hpp"
-#include "matrix.h"
+#include "matrixes/matrix.h"
 
 namespace MxLib
 {

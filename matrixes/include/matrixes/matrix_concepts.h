@@ -27,11 +27,11 @@ concept MatrixT = ReadonlyMatrixT<T> &&
 	};
 
 template<typename T>
-concept ContiniousStorageMatrix = MatrixT<T> &&
-	requires(T possibleContiniousMatrix)
+concept ContinuousStorageMatrix = MatrixT<T> &&
+	requires(T possibleContinuousMatrix)
 	{
-		{ possibleContiniousMatrix.data() } -> std::convertible_to<const double *>;
-		{ possibleContiniousMatrix.size() } -> std::same_as<std::size_t>;
+		{ possibleContinuousMatrix.data() } -> std::convertible_to<const double *>;
+		{ possibleContinuousMatrix.size() } -> std::same_as<std::size_t>;
 	};
 
 namespace MxLib

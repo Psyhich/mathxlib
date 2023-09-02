@@ -1,7 +1,8 @@
 #include "unittest_common.h"
-#include "algorithms.h"
-#include "view.h"
-#include "minor.h"
+
+#include "matrixes/algorithms.h"
+#include "matrixes/view.h"
+#include "matrixes/minor.h"
 
 using namespace MxLib;
 using namespace MxLib::algo;

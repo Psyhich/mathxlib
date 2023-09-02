@@ -3,7 +3,7 @@
 
 #include <string_view>
 
-namespace matrixlib::info
+namespace mathxlib::info
 {
 	static constexpr const std::string_view project_name = "@PROJECT_NAME@";
 	static constexpr const std::string_view project_version = "@PROJECT_VERSION@";

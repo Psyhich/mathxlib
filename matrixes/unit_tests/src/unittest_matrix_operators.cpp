@@ -6,7 +6,7 @@
 #include <fmt/color.h>
 
 #include "unittest_common.h"
-#include "operations.h"
+#include "matrixes/operations.h"
 
 using namespace MxLib;
 

@@ -1,0 +1,14 @@
+target_sources(unit_tests
+	PUBLIC
+		src/unittest_matrix.cpp
+		src/unittest_matrix_operators.cpp
+		src/unittest_matrix_algorithms.cpp
+)
+target_include_directories(unit_tests
+	PRIVATE
+		include/
+)
+target_link_libraries(unit_tests
+	PRIVATE
+		matrixes
+)

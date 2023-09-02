@@ -5,7 +5,7 @@
 #include <gmock/gmock.h>
 #include <fmt/color.h>
 
-#include "matrix.h"
+#include "matrixes/matrix.h"
 
 MATCHER_P(IsEqualMatrix, rmatrix, "")
 {

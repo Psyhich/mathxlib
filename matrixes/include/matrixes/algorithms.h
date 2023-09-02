@@ -11,6 +11,7 @@
 #include "operations.h"
 #include "minor.h"
 
+
 namespace MxLib::algo
 {
 	using MapFunc = std::function<void(double &value)>;
@@ -128,6 +129,44 @@ namespace MxLib::algo
 			throw std::runtime_error("Matrix is triangular, no inverse can be found");
 		}
 		return Transpose(Transpose(Adjoint(matrixToInverse)) / determinant);
+	}
+
+	[[nodiscard]] Matrix SolveGaussJordan(Matrix &augmentedMatrix);
+
+	template<ReadonlyMatrixT M>
+	[[nodiscard]] Matrix SolveGaussJordan(const M &coefficients, const M &constants)
+	{
+		if (coefficients.Rows() != constants.Rows())
+		{
+			throw std::domain_error{
+				fmt::format("Coefficients matrix should have same amount of rows as constants"
+					", but got: {} coefficients rows and {} constants rows",
+					coefficients.Rows(), constants.Rows())};
+		}
+		if (constants.Cols() == 1)
+		{
+			throw std::domain_error{
+				fmt::format("Constants matrix should have only one column, but got: {}",
+					constants.Cols())};
+		}
+
+		const std::size_t rows{coefficients.Rows()};
+		const std::size_t cols{coefficients.Cols()};
+
+		Matrix augumentedMatrix{coefficients.Rows(), coefficients.Cols() + 1};
+		for (std::size_t row = 0; row < rows; ++row)
+		{
+			for (std::size_t col = 0; col < cols; ++col)
+			{
+				augumentedMatrix(row, col) = coefficients(row, col);
+			}
+		}
+		for (std::size_t row = 0; row < rows; ++row)
+		{
+			augumentedMatrix(row, coefficients.Cols()) = constants(row, 0);
+		}
+
+		return SolveGaussJordan(augumentedMatrix);
 	}
 }
 

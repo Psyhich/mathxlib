@@ -1,5 +1,5 @@
 #include "unittest_common.h"
-#include "algorithms.h"
+#include "matrixes/algorithms.h"
 
 using namespace MxLib;
 using namespace MxLib::algo;
@@ -122,7 +122,7 @@ TEST(MatrixDeterminantTest, NonSquareMatrixDeterminantTestUnsuccessful)
 	EXPECT_THROW({(void)Determinant(toGetDeterminant);}, std::runtime_error);
 }
 
-TEST(MatrixAdjointTest, SquareMatrixAdjointTestSuccesful)
+TEST(MatrixAdjointTest, SquareMatrixAdjointTestSuccessful)
 {
 	const Matrix toBeProcessed{
 		{ 7, 8, 9 },
@@ -138,7 +138,7 @@ TEST(MatrixAdjointTest, SquareMatrixAdjointTestSuccesful)
 	};
 	EXPECT_THAT(result, IsEqualMatrix(expected));
 }
-TEST(MatrixAdjointTest, NonSquareMatrixAdjointTestUnsuccesful) {
+TEST(MatrixAdjointTest, NonSquareMatrixAdjointTestUnsuccessful) {
 	const Matrix toBeProcessed{
 		{ 7, 8, 9, 10.6 },
 		{ 6, 5, 4, 10.6 },
@@ -147,7 +147,7 @@ TEST(MatrixAdjointTest, NonSquareMatrixAdjointTestUnsuccesful) {
 
 	EXPECT_THROW({(void)Adjoint(toBeProcessed);}, std::runtime_error);
 }
-TEST(MatrixInverseTest, SquareMatrixInverseTestSuccesful)
+TEST(MatrixInverseTest, SquareMatrixInverseTestSuccessful)
 {
 	const Matrix toBeProcessed{
 		{ 7, 8, 9 },
@@ -163,7 +163,7 @@ TEST(MatrixInverseTest, SquareMatrixInverseTestSuccesful)
 	};
 	EXPECT_THAT(result, IsEqualMatrix(expected));
 }
-TEST(MatrixInverseTest, NonSquareMatrixInverseTestUnsuccesful)
+TEST(MatrixInverseTest, NonSquareMatrixInverseTestUnsuccessful)
 {
 	const Matrix toBeProcessed{
 		{ 7, 8, 9, 10.6 },
@@ -172,7 +172,7 @@ TEST(MatrixInverseTest, NonSquareMatrixInverseTestUnsuccesful)
 	};
 	EXPECT_THROW({(void)Inverse(toBeProcessed);}, std::runtime_error);
 }
-TEST(MatrixInverseTest, TriangularMatrixInverseTestUnsuccesful)
+TEST(MatrixInverseTest, TriangularMatrixInverseTestUnsuccessful)
 {
 	const Matrix toBeProcessed{
 		{ 1, 2, 3 },
@@ -328,3 +328,36 @@ TEST(MatrixSimpleOperations, MatrixChainedOperations_8)
 	};
 	EXPECT_THAT(result, IsEqualMatrix(expected));
 }
+
+using AugumentedSolution = std::pair<Matrix, Matrix>;
+class MatrixGaussJordanSuccessful : public ::testing::TestWithParam<AugumentedSolution>
+{ };
+
+TEST_P(MatrixGaussJordanSuccessful, MatrixGaussJordanSuccessful)
+{
+	auto[augumentedMatrix, expectedSolution] = GetParam();
+	const Matrix solved{SolveGaussJordan(augumentedMatrix)};
+	EXPECT_THAT(solved, IsEqualMatrix(expectedSolution));
+}
+
+INSTANTIATE_TEST_SUITE_P(MatrixLinearOperations, MatrixGaussJordanSuccessful, 
+	::testing::Values(
+		AugumentedSolution{
+			Matrix{
+				{11, 19, 1},
+				{21, 15, 5}
+			},
+			Matrix{
+				{0.34188034, -0.14529915}
+			}
+		},
+		AugumentedSolution{
+			Matrix{
+				{0, 2, 1},
+				{0, 2, 5}
+			},
+			Matrix{
+				{0.19047619, 0.5}
+			}
+		}
+	));
