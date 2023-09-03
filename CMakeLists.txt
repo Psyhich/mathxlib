@@ -69,6 +69,7 @@ if(ENABLE_TESTING)
 		PRIVATE
 			gtest_main
 			gmock
+			fmt
 			${CMAKE_DL_LIBS}
 	)
 	include(GoogleTest)
