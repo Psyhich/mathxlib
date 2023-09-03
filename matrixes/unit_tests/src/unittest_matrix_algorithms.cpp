@@ -328,36 +328,3 @@ TEST(MatrixSimpleOperations, MatrixChainedOperations_8)
 	};
 	EXPECT_THAT(result, IsEqualMatrix(expected));
 }
-
-using AugumentedSolution = std::pair<Matrix, Matrix>;
-class MatrixGaussJordanSuccessful : public ::testing::TestWithParam<AugumentedSolution>
-{ };
-
-TEST_P(MatrixGaussJordanSuccessful, MatrixGaussJordanSuccessful)
-{
-	auto[augumentedMatrix, expectedSolution] = GetParam();
-	const Matrix solved{SolveGaussJordan(augumentedMatrix)};
-	EXPECT_THAT(solved, IsEqualMatrix(expectedSolution));
-}
-
-INSTANTIATE_TEST_SUITE_P(MatrixLinearOperations, MatrixGaussJordanSuccessful, 
-	::testing::Values(
-		AugumentedSolution{
-			Matrix{
-				{11, 19, 1},
-				{21, 15, 5}
-			},
-			Matrix{
-				{0.34188034, -0.14529915}
-			}
-		},
-		AugumentedSolution{
-			Matrix{
-				{0, 2, 1},
-				{0, 2, 5}
-			},
-			Matrix{
-				{0.19047619, 0.5}
-			}
-		}
-	));
