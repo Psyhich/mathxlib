@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.22)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
-option(ENABLE_DEVELOPER_MODE "Enable 'developer mode'" TRUE)
+option(ENABLE_DEVELOPER_MODE "Enable 'developer mode'" ${PROJECT_IS_TOP_LEVEL})
 option(ENABLE_TESTING "Enable the tests" ${PROJECT_IS_TOP_LEVEL})
 
 project(mathxlib
@@ -76,7 +76,6 @@ if(ENABLE_TESTING)
 	include(cmake/CodeCoverage.cmake)
 
 	enable_testing()
-
 
 	setup_target_for_coverage_gcovr_xml(
 		NAME generate_report

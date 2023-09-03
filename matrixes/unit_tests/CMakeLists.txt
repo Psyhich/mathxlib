@@ -10,5 +10,5 @@ target_include_directories(unit_tests
 )
 target_link_libraries(unit_tests
 	PRIVATE
-		matrixes
+		mathx_matrixes
 )
