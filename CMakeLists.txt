@@ -13,11 +13,16 @@ project(mathxlib
 	LANGUAGES CXX C
 )
 
+include(cmake/CPM.cmake)
+CPMAddPackage("gh:fmtlib/fmt#10.1.0")
+if(ENABLE_TESTING)
+	CPMAddPackage("gh:google/googletest@1.14.0")
+endif()
+
 set(GIT_SHA "Unknown" CACHE STRING "SHA this build was generated from")
 string(SUBSTRING "${GIT_SHA}" 0 8 GIT_SHORT_SHA)
 
 include("${CMAKE_CURRENT_SOURCE_DIR}/cmake/load_project_options.cmake")
-include(cmake/CPM.cmake)
 
 if(ENABLE_DEVELOPER_MODE)
 	set(ENABLE_CLANG_TIDY ENABLE_CLANG_TIDY ON)
@@ -52,14 +57,10 @@ project_options(
 
 	${ENABLE_SANITIZER_ADDRESS}
 	${ENABLE_SANITIZER_UNDEFINED_BEHAVIOR}
-	${ENABLE_SANITIZER_THREAD}
 	${ENABLE_SANITIZER_MEMORY}
 )
 
-CPMAddPackage("gh:fmtlib/fmt#10.1.0")
-
 if(ENABLE_TESTING)
-	CPMAddPackage("gh:google/googletest@1.14.0")
 	add_executable(unit_tests)
 	target_disable_clang_tidy(unit_tests)
 	target_disable_cpp_check(unit_tests)
