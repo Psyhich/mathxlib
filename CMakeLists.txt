@@ -76,6 +76,9 @@ if(ENABLE_TESTING)
 	include(cmake/CodeCoverage.cmake)
 
 	enable_testing()
+	gtest_discover_tests(unit_tests
+		DISCOVERY_MODE POST_BUILD
+	)
 
 	setup_target_for_coverage_gcovr_xml(
 		NAME generate_report
