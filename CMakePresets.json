@@ -37,7 +37,7 @@
       "description": "Default build for library development with unit tests included",
       "configurePreset": "develop",
 	  "jobs": 8,
-	  "targets": "matrix_tests",
+	  "targets": "unit_tests",
 	  "configuration": "Debug"
     },
     {
