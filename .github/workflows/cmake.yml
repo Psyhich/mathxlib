@@ -17,10 +17,6 @@ jobs:
     - name: Install build dependencies
       run: |
         sudo apt update && sudo apt install -y ninja-build ccache cppcheck
-        python3 -m pip install conan==1.59 gcovr
-
-    - name: Configure conan
-      run: conan profile new default --detect
 
     - name: Configure CMake
       run: cmake --preset develop ./
