@@ -3,6 +3,7 @@ build*/
 out/
 cmake-build-*/
 conan-cache/
+cspell.json
 
 # User spesific settings
 CMakeUserPresets.json
