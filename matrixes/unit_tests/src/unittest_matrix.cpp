@@ -15,43 +15,43 @@ class MatrixConstructionTest :
 
 TEST_F(MatrixConstructionTest, ColsRowsConstructionTestSuccessful_1)
 {
-	const Matrix newMatrix = Matrix{2, 3};
+	const MatrixD newMatrix = MatrixD{2, 3};
 	ASSERT_EQ(newMatrix.Rows(), 2);
 	ASSERT_EQ(newMatrix.Cols(), 3);
 }
 TEST_F(MatrixConstructionTest, ColsRowsConstructionTestSuccessful_2)
 {
-	const Matrix newMatrix = Matrix{0, 0};
+	const MatrixD newMatrix = MatrixD{0, 0};
 	ASSERT_EQ(newMatrix.Rows(), 0);
 	ASSERT_EQ(newMatrix.Cols(), 0);
 }
 TEST_F(MatrixConstructionTest, ColsRowsConstructionTestSuccessful_3)
 {
-	const Matrix newMatrix = Matrix{0, 5};
+	const MatrixD newMatrix = MatrixD{0, 5};
 	ASSERT_EQ(newMatrix.Rows(), 0);
 	ASSERT_EQ(newMatrix.Cols(), 5);
 }
 TEST_F(MatrixConstructionTest, SquareMatrixConstructionTestSuccessful_1)
 {
-	const Matrix newMatrix = Matrix{5};
+	const MatrixD newMatrix = MatrixD{5};
 	ASSERT_EQ(newMatrix.Rows(), 5);
 	ASSERT_EQ(newMatrix.Cols(), 5);
 }
 TEST_F(MatrixConstructionTest, SquareMatrixConstructionTestSuccessful_2)
 {
-	const Matrix newMatrix = Matrix{0};
+	const MatrixD newMatrix = MatrixD{0};
 	ASSERT_EQ(newMatrix.Rows(), 0);
 	ASSERT_EQ(newMatrix.Cols(), 0);
 }
 TEST_F(MatrixConstructionTest, SquareMatrixConstructionTestSuccessful_3)
 {
-	const Matrix newMatrix = Matrix{10000};
+	const MatrixD newMatrix = MatrixD{10000};
 	ASSERT_EQ(newMatrix.Rows(), 10000);
 	ASSERT_EQ(newMatrix.Cols(), 10000);
 }
 TEST_F(MatrixConstructionTest, InitializerListConstructionTestSuccessful_1)
 {
-	const Matrix newMatrix{
+	const MatrixD newMatrix{
 		{ 1, 2, 3 },
 		{ 4, 5, 6 },
 		{ 7, 8, 9 }
@@ -61,7 +61,7 @@ TEST_F(MatrixConstructionTest, InitializerListConstructionTestSuccessful_1)
 }
 TEST_F(MatrixConstructionTest, InitializerListConstructionTestSuccessful_2)
 {
-	const Matrix newMatrix{
+	const MatrixD newMatrix{
 		{ 1, 2, 3, 2 },
 		{ 4, 5, 6, 2 },
 		{ 7, 8, 9, 2 }
@@ -71,45 +71,45 @@ TEST_F(MatrixConstructionTest, InitializerListConstructionTestSuccessful_2)
 }
 TEST_F(MatrixConstructionTest, InitializerListConstructionTestSuccessful_3)
 {
-	const Matrix newMatrix{{}};
+	const MatrixD newMatrix{{}};
 	ASSERT_EQ(newMatrix.Rows(), 1);
 	ASSERT_EQ(newMatrix.Cols(), 0);
 }
 TEST_F(MatrixConstructionTest, ByRankConstructionTestSuccessful)
 {
-	const Matrix newMatrix{5};
+	const MatrixD newMatrix{5};
 	ASSERT_EQ(newMatrix.Rows(), 5);
 	ASSERT_EQ(newMatrix.Cols(), 5);
 }
 TEST_F(MatrixConstructionTest, CopyConstructionTestSuccessful_1)
 {
-	const Matrix newMatrix{
+	const MatrixD newMatrix{
 		{ 1, 2 },
 		{ 3, 4 }
 	};
-	const Matrix copy{newMatrix};
+	const MatrixD copy{newMatrix};
 
 	EXPECT_THAT(copy, IsEqualMatrix(newMatrix));
 }
 TEST_F(MatrixConstructionTest, CopyConstructionTestSuccessful_2)
 {
-	const Matrix newMatrix{
+	const MatrixD newMatrix{
 		{ 1, 2 },
 		{ 3, 4 }
 	};
-	Matrix copy{{1}};
+	MatrixD copy{{1}};
 	copy = newMatrix;
 
 	EXPECT_THAT(copy, IsEqualMatrix(newMatrix));
 }
 TEST_F(MatrixConstructionTest, MoveConstructorTestSuccessful_1)
 {
-	Matrix original{
+	MatrixD original{
 		{ 1, 2 },
 		{ 3, 4 }
 	};
 
-	const Matrix moved{std::move(original)};
+	const MatrixD moved{std::move(original)};
 
 	ASSERT_EQ(original.Rows(), 0); // cppcheck-suppress[accessMoved]
 	ASSERT_EQ(original.Cols(), 0); // cppcheck-suppress[accessMoved]
@@ -117,7 +117,7 @@ TEST_F(MatrixConstructionTest, MoveConstructorTestSuccessful_1)
 	ASSERT_EQ(moved.Rows(), 2);
 	ASSERT_EQ(moved.Cols(), 2);
 	
-	const Matrix expected{
+	const MatrixD expected{
 		{ 1, 2 },
 		{ 3, 4 }
 	};
@@ -125,12 +125,12 @@ TEST_F(MatrixConstructionTest, MoveConstructorTestSuccessful_1)
 }
 TEST_F(MatrixConstructionTest, MoveConstructorTestSuccessful_2)
 {
-	Matrix original{
+	MatrixD original{
 		{ 1, 2 },
 		{ 3, 4 }
 	};
 
-	Matrix moved{{ 1, 2 }};
+	MatrixD moved{{ 1, 2 }};
 	moved = std::move(original);
 
 	ASSERT_EQ(original.Rows(), 0); // cppcheck-suppress[accessMoved]
@@ -139,7 +139,7 @@ TEST_F(MatrixConstructionTest, MoveConstructorTestSuccessful_2)
 	ASSERT_EQ(moved.Rows(), 2);
 	ASSERT_EQ(moved.Cols(), 2);
 	
-	const Matrix expected{
+	const MatrixD expected{
 		{ 1, 2 },
 		{ 3, 4 }
 	};
@@ -147,7 +147,7 @@ TEST_F(MatrixConstructionTest, MoveConstructorTestSuccessful_2)
 }
 TEST(MatrixBoundCheckTest, MatrixInBoundGetterTestSuccessful)
 {
-	const Matrix testMatrix{
+	const MatrixD testMatrix{
 		{ 1, 2 },
 		{ 3, 4 }
 	};
@@ -156,7 +156,7 @@ TEST(MatrixBoundCheckTest, MatrixInBoundGetterTestSuccessful)
 }
 TEST(MatrixBoundCheckTest, MatrixOutOfBoundGetterTestUnsuccessful)
 {
-	const Matrix testMatrix{
+	const MatrixD testMatrix{
 		{ 1, 2 },
 		{ 3, 4 }
 	};
@@ -166,13 +166,13 @@ TEST(MatrixBoundCheckTest, MatrixOutOfBoundGetterTestUnsuccessful)
 
 TEST(MatrixViewTest, BasicConstructionTestSuccessful)
 {
-	const Matrix viewedMatrix{
+	const MatrixD viewedMatrix{
 		{ 1, 3, 4 },
 		{ -1, 3, 4 },
 		{ 3, 6, 7 }
 	};
 
-	const Matrix expected{
+	const MatrixD expected{
 		{ 1, 3 },
 		{ -1, 3 }
 	};
@@ -182,13 +182,13 @@ TEST(MatrixViewTest, BasicConstructionTestSuccessful)
 }
 TEST(MatrixViewTest, BasicConstructionWithOutOfBoundsTestUnsuccessful)
 {
-	const Matrix viewedMatrix{
+	const MatrixD viewedMatrix{
 		{ 1, 3, 4 },
 		{ -1, 3, 4 },
 		{ 3, 6, 7 }
 	};
 
-	const Matrix expected{
+	const MatrixD expected{
 		{ 1, 3 },
 		{ -1, 3 }
 	};
@@ -197,13 +197,13 @@ TEST(MatrixViewTest, BasicConstructionWithOutOfBoundsTestUnsuccessful)
 }
 TEST(MatrixViewTest, BasicConstructionWithOutOfBoundsSizeTestUnsuccessful)
 {
-	const Matrix viewedMatrix{
+	const MatrixD viewedMatrix{
 		{ 1, 3, 4 },
 		{ -1, 3, 4 },
 		{ 3, 6, 7 }
 	};
 
-	const Matrix expected{
+	const MatrixD expected{
 		{ 1, 3 },
 		{ -1, 3 }
 	};
@@ -212,7 +212,7 @@ TEST(MatrixViewTest, BasicConstructionWithOutOfBoundsSizeTestUnsuccessful)
 }
 TEST(MatrixViewTest, RecursiveViewTestSuccessful)
 {
-	const Matrix viewedMatrix{
+	const MatrixD viewedMatrix{
 		{ 1, 3, 4, 2 },
 		{ -1, 3, 4, 3 },
 		{ 3, 6, 7, 4 }
@@ -221,7 +221,7 @@ TEST(MatrixViewTest, RecursiveViewTestSuccessful)
 	const MatrixView view1{viewedMatrix, 0, 0, 3, 3};
 	const MatrixView view2{view1, 1, 1, 2, 2};
 
-	const Matrix expected{
+	const MatrixD expected{
 		{ 3, 4 },
 		{ 6, 7 }
 	};
@@ -231,13 +231,13 @@ TEST(MatrixViewTest, RecursiveViewTestSuccessful)
 
 TEST(MatrixMinorViewTest, BasicViewTestSuccessful_1)
 {
-	const Matrix viewedMatrix{
+	const MatrixD viewedMatrix{
 		{ 1, 3, 4, 2 },
 		{ -1, 3, 4, 3 },
 		{ 3, 6, 7, 4 }
 	};
 
-	const Matrix expected{
+	const MatrixD expected{
 		{ 3, 4, 3 },
 		{ 6, 7, 4 }
 	};
@@ -248,13 +248,13 @@ TEST(MatrixMinorViewTest, BasicViewTestSuccessful_1)
 }
 TEST(MatrixMinorViewTest, BasicViewTestSuccessful_2)
 {
-	const Matrix viewedMatrix{
+	const MatrixD viewedMatrix{
 		{ 1, 3, 4, 2 },
 		{ -1, 3, 4, 3 },
 		{ 3, 6, 7, 4 }
 	};
 
-	const Matrix expected{
+	const MatrixD expected{
 		{ 1, 3, 2 },
 		{ 3, 6, 4 }
 	};
@@ -265,7 +265,7 @@ TEST(MatrixMinorViewTest, BasicViewTestSuccessful_2)
 }
 TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnsuccessful_1)
 {
-	const Matrix viewedMatrix{
+	const MatrixD viewedMatrix{
 		{ 1, 3, 4, 2 },
 		{ -1, 3, 4, 3 },
 		{ 3, 6, 7, 4 }
@@ -275,7 +275,7 @@ TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnsuccessful_1)
 }
 TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnsuccessful_2)
 {
-	const Matrix viewedMatrix{
+	const MatrixD viewedMatrix{
 		{ 1, 3, 4, 2 },
 		{ -1, 3, 4, 3 },
 		{ 3, 6, 7, 4 }
@@ -285,7 +285,7 @@ TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnsuccessful_2)
 }
 TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnsuccessful_3)
 {
-	const Matrix viewedMatrix{
+	const MatrixD viewedMatrix{
 		{ 1, 3, 4, 2 },
 		{ -1, 3, 4, 3 },
 		{ 3, 6, 7, 4 }
@@ -295,7 +295,7 @@ TEST(MatrixMinorViewTest, OutOfBoundsViewTestUnsuccessful_3)
 }
 TEST(MatrixMinorViewTest, RecursiveViewTestSuccessful_1)
 {
-	const Matrix viewedMatrix{
+	const MatrixD viewedMatrix{
 		{ 1, 3, 4, 2 },
 		{ -1, 3, 4, 3 },
 		{ 3, 6, 7, 4 }
@@ -304,7 +304,7 @@ TEST(MatrixMinorViewTest, RecursiveViewTestSuccessful_1)
 	const MinorView minor1{viewedMatrix, 0, 0};
 	const MinorView minor2{minor1, 0, 0};
 
-	const Matrix expected{
+	const MatrixD expected{
 		{ 7, 4 }
 	};
 
@@ -312,7 +312,7 @@ TEST(MatrixMinorViewTest, RecursiveViewTestSuccessful_1)
 }
 TEST(MatrixMinorViewTest, RecursiveViewTestSuccessful_2)
 {
-	const Matrix viewedMatrix{
+	const MatrixD viewedMatrix{
 		{ 1, 3, 4, 2, 6, 42 },
 		{ -1, 3, 4, 3, 8, 42 },
 		{ 3, 6, 7, 4, 4, 42 },
@@ -325,7 +325,7 @@ TEST(MatrixMinorViewTest, RecursiveViewTestSuccessful_2)
 	const MinorView minor3{minor2, 2, 2};
 	const MinorView minor4{minor3, 0, 0};
 
-	const Matrix expected{
+	const MatrixD expected{
 		{ 3, 42 },
 	};
 
@@ -333,7 +333,7 @@ TEST(MatrixMinorViewTest, RecursiveViewTestSuccessful_2)
 }
 TEST(MatrixMinorViewTest, RecursiveViewWithOutOfBoundsTestUnsuccessful)
 {
-	const Matrix viewedMatrix{
+	const MatrixD viewedMatrix{
 		{ 1, 3, 4, 2 },
 		{ -1, 3, 4, 3 },
 		{ 3, 6, 7, 4 }
@@ -345,7 +345,7 @@ TEST(MatrixMinorViewTest, RecursiveViewWithOutOfBoundsTestUnsuccessful)
 
 TEST(MatrixRowViewTest, BasicViewTest)
 {
-	const Matrix viewedMatrix{
+	const MatrixD viewedMatrix{
 		{ 1, 3, 4 },
 		{ -1, 3, 4 },
 		{ 3, 6, 7 }
@@ -362,7 +362,7 @@ TEST(MatrixRowViewTest, BasicViewTest)
 
 TEST(MatrixColViewTest, BasicViewTest)
 {
-	const Matrix viewedMatrix{
+	const MatrixD viewedMatrix{
 		{ 1, 3, 4 },
 		{ -1, 3, 4 },
 		{ 3, 6, 7 }

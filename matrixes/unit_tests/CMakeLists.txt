@@ -9,6 +9,6 @@ target_include_directories(unit_tests
 		include/
 )
 target_link_libraries(unit_tests
-	PRIVATE
+	PUBLIC
 		mathx_matrixes
 )

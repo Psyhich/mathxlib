@@ -14,12 +14,13 @@
 
 namespace MxLib::algo
 {
-	using MapFunc = std::function<void(double &value)>;
+	template<typename ReturnT, typename InT>
+	using MapFunc = std::function<ReturnT(InT &value)>;
 
-	template<ReadonlyMatrixT M>
-	[[nodiscard]] Matrix Map(const M& matrix, const MapFunc &func)
+	template<ReadonlyMatrixT M, typename OutT>
+	[[nodiscard]] ArithmeticResult<M, M, OutT> Map(const M& matrix, const MapFunc<OutT, typename M::contained> &func)
 	{
-		Matrix outMatrix{matrix};
+		ArithmeticResult<M, M, OutT> outMatrix{matrix};
 		for (size_t row = 0; row < outMatrix.Rows(); row++)
 		{
 			for (size_t col = 0; col < outMatrix.Cols(); col++)
@@ -31,8 +32,8 @@ namespace MxLib::algo
 		return outMatrix;
 	}
 
-	template<MatrixT M>
-	M &MapInplace(M &matrixToMap, const MapFunc &func)
+	template<MatrixT M, typename OutT>
+	M &MapInplace(M &matrixToMap, const MapFunc<OutT, typename M::contained> &func)
 	{
 		for (size_t row = 0; row < matrixToMap.Rows(); row++)
 		{
@@ -44,9 +45,9 @@ namespace MxLib::algo
 	}
 
 	template<ReadonlyMatrixT M>
-	[[nodiscard]] Matrix Transpose(const M &matrixToTranspose)
+	[[nodiscard]] ArithmeticResult<M, M, typename M::contained> Transpose(const M &matrixToTranspose)
 	{
-		Matrix transposed(matrixToTranspose.Cols(), matrixToTranspose.Rows());
+		ArithmeticResult<M, M, typename M::contained> transposed{matrixToTranspose.Cols(), matrixToTranspose.Rows()};
 		for (size_t row = 0; row < matrixToTranspose.Rows(); row++)
 		{
 			for (size_t col = 0; col < matrixToTranspose.Cols(); col++)
@@ -58,18 +59,21 @@ namespace MxLib::algo
 	}
 
 	template<ReadonlyMatrixT M>
-	[[nodiscard]] double Determinant(const M &matrix)
+	[[nodiscard]] typename M::contained Determinant(const M &matrix)
 	{
+		using ContainedT = typename M::contained;
+		using OutMatrix = ArithmeticResult<M, M, ContainedT>;
+
 		IsSquareMatrix(matrix);
 
-		std::stack<std::pair<double, Matrix>> matrixesToCalculate;
-		matrixesToCalculate.emplace(1, Matrix{matrix});
+		std::stack<std::pair<ContainedT, OutMatrix>> matrixesToCalculate;
+		matrixesToCalculate.emplace(1, OutMatrix{matrix});
 
-		double determinant = 0;
+		ContainedT determinant = 0;
 		while(!matrixesToCalculate.empty())
 		{
-			const double coefficient = matrixesToCalculate.top().first;
-			const Matrix currentMatrix = std::move(matrixesToCalculate.top().second);
+			const ContainedT coefficient = matrixesToCalculate.top().first;
+			const OutMatrix currentMatrix = std::move(matrixesToCalculate.top().second);
 			matrixesToCalculate.pop();
 
 			const size_t currentMatrixRank = currentMatrix.Rows();
@@ -98,12 +102,12 @@ namespace MxLib::algo
 	}
 
 	template<ReadonlyMatrixT M>
-	[[nodiscard]] Matrix Adjoint(const M &matrix)
+	[[nodiscard]] MultiplicationResult<M> Adjoint(const M &matrix)
 	{
 		IsSquareMatrix(matrix);
 
-		Matrix outMatrix{matrix.Rows()};
-		size_t const rank = matrix.Rows();
+		MultiplicationResult<M> outMatrix{matrix.Rows()};
+		const size_t rank = matrix.Rows();
 		for (size_t currRow = 0; currRow < rank; currRow++)
 		{
 			for (size_t currCol = 0; currCol < rank; currCol++)
@@ -119,54 +123,17 @@ namespace MxLib::algo
 	}
 	
 	template<ReadonlyMatrixT M>
-	[[nodiscard]] Matrix Inverse(const M &matrixToInverse)
+	[[nodiscard]] DivisionResult<MultiplicationResult<M>> Inverse(const M &matrixToInverse)
 	{
+		using ContainedT = typename DivisionResult<MultiplicationResult<M>>::contained;
 		IsSquareMatrix(matrixToInverse);
 
-		const double determinant = Determinant(matrixToInverse);
+		const ContainedT determinant = Determinant(matrixToInverse);
 		if(std::abs(determinant) <= DEFAULT_ACCURACY)
 		{
 			throw std::runtime_error("Matrix is triangular, no inverse can be found");
 		}
 		return Transpose(Transpose(Adjoint(matrixToInverse)) / determinant);
-	}
-
-	[[nodiscard]] Matrix SolveGaussJordan(Matrix &augmentedMatrix);
-
-	template<ReadonlyMatrixT M>
-	[[nodiscard]] Matrix SolveGaussJordan(const M &coefficients, const M &constants)
-	{
-		if (coefficients.Rows() != constants.Rows())
-		{
-			throw std::domain_error{
-				fmt::format("Coefficients matrix should have same amount of rows as constants"
-					", but got: {} coefficients rows and {} constants rows",
-					coefficients.Rows(), constants.Rows())};
-		}
-		if (constants.Cols() == 1)
-		{
-			throw std::domain_error{
-				fmt::format("Constants matrix should have only one column, but got: {}",
-					constants.Cols())};
-		}
-
-		const std::size_t rows{coefficients.Rows()};
-		const std::size_t cols{coefficients.Cols()};
-
-		Matrix augumentedMatrix{coefficients.Rows(), coefficients.Cols() + 1};
-		for (std::size_t row = 0; row < rows; ++row)
-		{
-			for (std::size_t col = 0; col < cols; ++col)
-			{
-				augumentedMatrix(row, col) = coefficients(row, col);
-			}
-		}
-		for (std::size_t row = 0; row < rows; ++row)
-		{
-			augumentedMatrix(row, coefficients.Cols()) = constants(row, 0);
-		}
-
-		return SolveGaussJordan(augumentedMatrix);
 	}
 }
 

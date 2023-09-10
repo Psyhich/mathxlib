@@ -9,26 +9,86 @@ namespace MxLib
 {
 	static inline constexpr const double DEFAULT_ACCURACY{1e-6};
 
+	template<ReadonlyMatrixT LMatrix, ReadonlyMatrixT RMatrix, typename ResultT>
+	struct ArithmeticOperationDeducer
+	{
+		using value = Matrix<ResultT>;
+	};
+
+	template<ReadonlyMatrixT LMatrix, typename ContainedRT,
+		template<typename> typename RMatrix, typename ResultT>
+			requires MatrixT<RMatrix<ContainedRT>>
+				&& MatrixT<RMatrix<ResultT>>
+	struct ArithmeticOperationDeducer<LMatrix, RMatrix<ContainedRT>, ResultT>
+	{
+		using value = RMatrix<ResultT>;
+	};
+
+	template<typename ContainedLT, template<typename> typename LMatrix,
+		ReadonlyMatrixT RMatrix, typename ResultT>
+			requires MatrixT<LMatrix<ContainedLT>>
+				&& MatrixT<LMatrix<ResultT>>
+	struct ArithmeticOperationDeducer<LMatrix<ContainedLT>, RMatrix, ResultT>
+	{
+		using value = LMatrix<ResultT>;
+	};
+
+	template<typename ContainedLT, template<typename> typename LMatrix,
+		typename ContainedRT, template<typename> typename RMatrix, typename ResultT>
+			requires MatrixT<LMatrix<ContainedLT>>
+				&& MatrixT<LMatrix<ResultT>>
+				&& MatrixT<RMatrix<ContainedRT>>
+				&& MatrixT<Matrix<ResultT>>
+	struct ArithmeticOperationDeducer<LMatrix<ContainedLT>, RMatrix<ContainedRT>, ResultT>
+	{
+		using value = LMatrix<ResultT>;
+	};
+
+	template<ReadonlyMatrixT LMatrix, ReadonlyMatrixT RMatrix, typename ResultT>
+	using ArithmeticResult = typename ArithmeticOperationDeducer<RMatrix, LMatrix, ResultT>::value;
+
+	template<ReadonlyMatrixT LMatrix>
+	using NegativeResult = ArithmeticResult<LMatrix, LMatrix, decltype(-typename LMatrix::contained{})>;
+
+	template<ReadonlyMatrixT LMatrix, ReadonlyMatrixT RMatrix=LMatrix>
+	using SumResult = ArithmeticResult<LMatrix, RMatrix, decltype(typename LMatrix::contained{} + typename RMatrix::contained{})>;
+
+	template<ReadonlyMatrixT LMatrix, ReadonlyMatrixT RMatrix=LMatrix>
+	using SubtractionResult = ArithmeticResult<LMatrix, RMatrix, decltype(typename LMatrix::contained{} - typename RMatrix::contained{})>;
+
+	template<ReadonlyMatrixT LMatrix, ReadonlyMatrixT RMatrix=LMatrix>
+	using MultiplicationResult = ArithmeticResult<LMatrix, RMatrix, decltype(typename LMatrix::contained{} * typename RMatrix::contained{})>;
+
+	template<ReadonlyMatrixT LMatrix, ReadonlyMatrixT RMatrix=LMatrix>
+	using DivisionResult = ArithmeticResult<LMatrix, RMatrix, decltype(typename LMatrix::contained{} / typename RMatrix::contained{})>;
+
+	template<ReadonlyMatrixT LMatrix, ReadonlyMatrixT RMatrix=LMatrix>
+	using DotProductResult = ArithmeticResult<LMatrix, RMatrix,
+		decltype(typename LMatrix::contained{} * typename RMatrix::contained{}
+			+ typename LMatrix::contained{} * typename RMatrix::contained{})>;
+
+
 	template<MatrixT M>
-	M &Randomise(M &matrixToRandomise, double startValue, double endValue)
+		requires std::floating_point<typename M::contained>
+	M &Randomize(M &matrixToRandomize, typename M::contained startValue, typename M::contained endValue)
 	{
 		using namespace std;
 
 		static random_device generator;
-		uniform_real_distribution<double> distribution(startValue, endValue);
+		uniform_real_distribution<typename M::contained> distribution(startValue, endValue);
 
-		for (size_t row = 0; row < matrixToRandomise.Rows(); row++)
+		for (size_t row = 0; row < matrixToRandomize.Rows(); row++)
 		{
-			for (size_t col = 0; col < matrixToRandomise.Cols(); col++)
+			for (size_t col = 0; col < matrixToRandomize.Cols(); col++)
 			{
-				matrixToRandomise(row, col) = distribution(generator);
+				matrixToRandomize(row, col) = distribution(generator);
 			}
 		}
-		return matrixToRandomise;
+		return matrixToRandomize;
 	}
 
 	template<ReadonlyMatrixT lM, ReadonlyMatrixT rM>
-	inline void CheckDimensions(const lM &lMatrixToCheck, const rM& rMatrixToCheck)
+	inline void CheckDimensions(const lM &lMatrixToCheck, const rM &rMatrixToCheck)
 	{
 		if(lMatrixToCheck.Cols() != rMatrixToCheck.Cols())
 		{
@@ -45,32 +105,16 @@ namespace MxLib
 	{
 		if(matrixToCheck.Rows() != matrixToCheck.Cols())
 		{
-			throw std::runtime_error("This matrixe is not square one");
+			throw std::runtime_error("This matrix is not square one");
 		}
-	}
-
-	template<ReadonlyMatrixT M>
-	void Print(const M &matrixToPrint)
-	{
-		for (size_t i = 0; i < matrixToPrint.Rows(); i++)
-		{
-			fmt::print("| ");
-			for (size_t j = 0; j < matrixToPrint.Cols(); j++)
-			{
-				fmt::print(" {} ", matrixToPrint(i, j));
-			}
-			fmt::print(" |\n");
-		}
-		fmt::print("\n");
 	}
 
 	template<ReadonlyMatrixT lM, ReadonlyMatrixT rM>
-	[[nodiscard]] Matrix Multiply(const lM &lMatrixToMultiply,
-		const rM &rMatrixToMultiply)
+	[[nodiscard]] MultiplicationResult<lM, rM> Multiply(const lM &lMatrixToMultiply, const rM &rMatrixToMultiply)
 	{
 		CheckDimensions(lMatrixToMultiply, rMatrixToMultiply);
 
-		Matrix outMatrix{lMatrixToMultiply};
+		MultiplicationResult<lM, rM> outMatrix{lMatrixToMultiply};
 		for(size_t row = 0; row < lMatrixToMultiply.Rows(); row++)
 		{
 			for (size_t col = 0; col < lMatrixToMultiply.Cols(); col++)
@@ -82,14 +126,16 @@ namespace MxLib
 	}
 
 	template<ReadonlyMatrixT lM, ReadonlyMatrixT rM>
-	[[nodiscard]] bool IsEqualTo(const lM &lMatrix,
-		const rM &rMatrix, double eps=DEFAULT_ACCURACY) noexcept
+		requires (std::integral<typename lM::contained> || std::floating_point<typename lM::contained>)
+			&& (std::integral<typename rM::contained> || std::floating_point<typename rM::contained>)
+	[[nodiscard]] bool IsEqualTo(const lM &lMatrix, const rM &rMatrix, double eps=DEFAULT_ACCURACY) noexcept
 	{
 		if(lMatrix.Cols() != rMatrix.Cols() ||
 			lMatrix.Rows() != rMatrix.Rows())
 		{
 			return false;
 		}
+
 		for(std::size_t row = 0; row < lMatrix.Rows(); row++)
 		{
 			for(std::size_t col = 0; col < lMatrix.Cols(); col++)
@@ -104,7 +150,7 @@ namespace MxLib
 	}
 
 	template<MatrixT M>
-	M &SetAll(M &matrixToSet, double valueToSet) noexcept
+	M &SetAll(M &matrixToSet, const typename M::contained &valueToSet) noexcept
 	{
 		for(std::size_t row = 0; row < matrixToSet.Rows(); row++)
 		{
@@ -118,20 +164,20 @@ namespace MxLib
 
 	// Custom operators
 	template<ReadonlyMatrixT lM, ReadonlyMatrixT rM>
-	Matrix operator*(const lM &lMatrixToDotProduct, const rM &rMatrixToDotProduct)
+	DotProductResult<lM, rM> operator*(const lM &lMatrixToDotProduct, const rM &rMatrixToDotProduct)
 	{
+		using ContainedT = typename DotProductResult<lM, rM>::contained;
 		if(lMatrixToDotProduct.Cols() != rMatrixToDotProduct.Rows())
 		{
 			throw std::length_error("Columns of left matrix doesn't match rows of right one");
 		}
 
-		Matrix out{lMatrixToDotProduct.Rows(), rMatrixToDotProduct.Cols()};
-
+		DotProductResult<lM, rM> out{lMatrixToDotProduct.Rows(), rMatrixToDotProduct.Cols()};
 		for (size_t row = 0; row < lMatrixToDotProduct.Rows(); row++)
 		{
 			for (size_t col = 0; col < rMatrixToDotProduct.Cols(); col++) 
 			{
-				double &val = out(row, col);
+				ContainedT &val = out(row, col);
 				val = 0;
 				for (size_t iter = 0; iter < rMatrixToDotProduct.Rows(); iter++)
 				{
@@ -144,16 +190,16 @@ namespace MxLib
 	}
 
 	template<ReadonlyMatrixT lM, ReadonlyMatrixT rM>
-	Matrix operator+(const lM &lMatrix, const rM &rMatrix)
+	SumResult<lM, rM> operator+(const lM &lMatrix, const rM &rMatrix)
 	{
 		CheckDimensions(lMatrix, rMatrix);
 
-		Matrix outMatrix = lMatrix;
+		SumResult<lM, rM> outMatrix{lMatrix};
 		for (size_t row = 0; row < lMatrix.Rows(); row++)
 		{
 			for (size_t col = 0; col < lMatrix.Cols(); col++)
 			{
-				outMatrix(row, col) += rMatrix(row, col);
+				outMatrix(row, col) = lMatrix(row, col) + rMatrix(row, col);
 			}
 		}
 
@@ -161,11 +207,11 @@ namespace MxLib
 	}
 
 	template<ReadonlyMatrixT lM, ReadonlyMatrixT rM>
-	Matrix operator-(const lM &lMatrix, const rM &rMatrix)
+	SubtractionResult<lM, rM> operator-(const lM &lMatrix, const rM &rMatrix)
 	{
 		CheckDimensions(lMatrix, rMatrix);
 
-		Matrix outMatrix = lMatrix;
+		SubtractionResult<lM, rM> outMatrix{lMatrix};
 		for (size_t row = 0; row < lMatrix.Rows(); row++)
 		{
 			for (size_t col = 0; col < lMatrix.Cols(); col++)
@@ -178,7 +224,7 @@ namespace MxLib
 	}
 
 	template<MatrixT lM, ReadonlyMatrixT rM>
-	Matrix &operator+=(lM &lMatrix, const rM &rMatrix)
+	lM &operator+=(lM &lMatrix, const rM &rMatrix)
 	{
 		CheckDimensions(lMatrix, rMatrix);
 
@@ -193,7 +239,7 @@ namespace MxLib
 	}
 
 	template<MatrixT lM, ReadonlyMatrixT rM>
-	Matrix &operator-=(lM &lMatrix, const rM &rMatrix)
+	lM &operator-=(lM &lMatrix, const rM &rMatrix)
 	{
 		CheckDimensions(lMatrix, rMatrix);
 
@@ -207,12 +253,12 @@ namespace MxLib
 		return lMatrix;
 	}
 
-	// TODO: add scalar assigment operations
+	// TODO: add scalar assignment operations
 	// Operations with scalar values
-	template<ReadonlyMatrixT M>
-	Matrix operator/(const M &matrixToChange, double numberToDivide)
+	template<ReadonlyMatrixT M, typename T>
+	ArithmeticResult<M, M, decltype(typename M::contained{} / T{})> operator/(const M &matrixToChange, const T &numberToDivide)
 	{
-		Matrix outMatrix = matrixToChange;
+		ArithmeticResult<M, M, decltype(typename M::contained{} / T{})> outMatrix{matrixToChange};
 		for (size_t row = 0; row < matrixToChange.Rows(); row++)
 		{
 			for (size_t col = 0; col < matrixToChange.Cols(); col++)
@@ -223,10 +269,10 @@ namespace MxLib
 		return outMatrix;
 	}
 
-	template<ReadonlyMatrixT M>
-	Matrix operator*(const M &matrixToChange, double numberToMultiply)
+	template<ReadonlyMatrixT M, typename T>
+	ArithmeticResult<M, M, decltype(typename M::contained{} * T{})> operator*(const M &matrixToChange, const T &numberToMultiply)
 	{
-		Matrix outMatrix = matrixToChange;
+		ArithmeticResult<M, M, decltype(typename M::contained{} * T{})> outMatrix{matrixToChange};
 		for (size_t row = 0; row < matrixToChange.Rows(); row++)
 		{
 			for (size_t col = 0; col < matrixToChange.Cols(); col++)
@@ -237,10 +283,10 @@ namespace MxLib
 		return outMatrix;
 	}
 
-	template<ReadonlyMatrixT M>
-	Matrix operator+(const M &matrixToChange, double numberToAdd)
+	template<ReadonlyMatrixT M, typename T>
+	ArithmeticResult<M, M, decltype(typename M::contained{} + T{})> operator+(const M &matrixToChange, const T &numberToAdd)
 	{
-		Matrix outMatrix = matrixToChange;
+		ArithmeticResult<M, M, decltype(typename M::contained{} + T{})> outMatrix{matrixToChange};
 		for (size_t row = 0; row < matrixToChange.Rows(); row++)
 		{
 			for (size_t col = 0; col < matrixToChange.Cols(); col++)
@@ -251,10 +297,10 @@ namespace MxLib
 		return outMatrix;
 	}
 
-	template<ReadonlyMatrixT M>
-	Matrix operator-(const M &matrixToChange, double numberToSubtract)
+	template<ReadonlyMatrixT M, typename T>
+	ArithmeticResult<M, M, decltype(typename M::contained{} - T{})> operator-(const M &matrixToChange, const T &numberToSubtract)
 	{
-		Matrix outMatrix = matrixToChange;
+		ArithmeticResult<M, M, decltype(typename M::contained{} - T{})> outMatrix{matrixToChange};
 		for (size_t row = 0; row < matrixToChange.Rows(); row++)
 		{
 			for (size_t col = 0; col < matrixToChange.Cols(); col++)
@@ -265,21 +311,20 @@ namespace MxLib
 		return outMatrix;
 	}
 
-	// Unaries
+	// Unary
 	template<ReadonlyMatrixT M>
-	Matrix operator-(const M& matrixToChange)
+	NegativeResult<M> operator-(const M &matrixToChange)
 	{
-		Matrix negativeMatrix{matrixToChange};
+		NegativeResult<M> negativeMatrix{matrixToChange};
 		for (size_t row = 0; row < matrixToChange.Rows(); row++)
 		{
 			for (size_t col = 0; col < matrixToChange.Cols(); col++)
 			{
-				negativeMatrix(row, col) *= -1;
+				negativeMatrix(row, col) = -negativeMatrix(row, col);
 			}
 		}
 		return negativeMatrix;
 	}
-
 }
 
 #endif // MATRIX_OPERATIONS_H

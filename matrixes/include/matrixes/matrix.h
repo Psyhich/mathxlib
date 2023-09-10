@@ -11,110 +11,223 @@
 namespace MxLib
 {
 
-class Matrix
-{
-public:
-	Matrix() noexcept = default;
-
-	explicit Matrix(const std::initializer_list<std::initializer_list<double>> &initializer) :
-		m_cols{initializer.size() > 0 ? initializer.begin()[0].size() : 0},
-		m_rows{initializer.size()},
-		m_size{m_rows * m_cols},
-		m_values{m_size > 0 ? new double[m_size] : nullptr}
+	template<typename ContainedT>
+	class Matrix
 	{
-		for(std::size_t rowIndex = 0; rowIndex < m_rows; rowIndex++)
-		{
-			if (initializer.begin()[rowIndex].size() != m_cols)
-			{
-				throw std::out_of_range{"Matrix contains inconsistent amount of columns"};
-			}
+	public:
+		using contained = ContainedT;
 
-			for (std::size_t colIndex = 0; colIndex < m_cols; colIndex++)
+		Matrix() noexcept = default;
+
+		explicit Matrix(const std::initializer_list<std::initializer_list<ContainedT>> &initializer) :
+			m_cols{initializer.size() > 0 ? initializer.begin()[0].size() : 0},
+			m_rows{initializer.size()},
+			m_size{m_rows * m_cols},
+			m_values{m_size > 0 ? new ContainedT[m_size] : nullptr}
+		{
+			for(std::size_t rowIndex = 0; rowIndex < m_rows; rowIndex++)
 			{
-				(*this)(rowIndex, colIndex) = initializer.begin()[rowIndex].begin()[colIndex];
+				if (initializer.begin()[rowIndex].size() != m_cols)
+				{
+					throw std::out_of_range{"Matrix contains inconsistent amount of columns"};
+				}
+
+				for (std::size_t colIndex = 0; colIndex < m_cols; colIndex++)
+				{
+					(*this)(rowIndex, colIndex) = initializer.begin()[rowIndex].begin()[colIndex];
+				}
 			}
 		}
-	}
-	Matrix(std::size_t rows, std::size_t cols);
-	explicit Matrix(std::size_t dimensions);
-
-	template<ReadonlyMatrixT M>
-	explicit Matrix(const M &matrixToCopy) :
-		m_cols{matrixToCopy.Cols()},
-		m_rows{matrixToCopy.Rows()},
-		m_size{m_cols * m_rows},
-		m_values{m_size > 0 ? new double[m_size] : nullptr}
-	{
-		for (std::size_t row = 0; row < m_rows; ++row)
+		Matrix(std::size_t rows, std::size_t cols) :
+			m_cols{cols},
+			m_rows{rows},
+			m_size{rows * cols},
+			m_values{new ContainedT[rows * cols]}
 		{
-			for (std::size_t col = 0; col < m_cols; ++col)
+		}
+		explicit Matrix(std::size_t dimensions) :
+			m_cols{dimensions},
+			m_rows{dimensions},
+			m_size{dimensions * dimensions},
+			m_values{new ContainedT[m_size]}
+		{}
+
+		template<ReadonlyMatrixT M>
+			requires std::convertible_to<typename M::contained, ContainedT>
+		explicit Matrix(const M &matrixToCopy) :
+			m_cols{matrixToCopy.Cols()},
+			m_rows{matrixToCopy.Rows()},
+			m_size{m_cols * m_rows},
+			m_values{m_size > 0 ? new ContainedT[m_size] : nullptr}
+		{
+			for (std::size_t row = 0; row < m_rows; ++row)
 			{
-				(*this)(row, col) = matrixToCopy(row, col);
+				for (std::size_t col = 0; col < m_cols; ++col)
+				{
+					(*this)(row, col) = static_cast<ContainedT>(matrixToCopy(row, col));
+				}
 			}
 		}
-	}
 
-	Matrix(const double *data, std::size_t rows, std::size_t cols);
-	Matrix(const double **data, std::size_t rows, std::size_t cols);
+		template<ReadonlyMatrixT M>
+			requires std::convertible_to<typename M::contained, ContainedT>
+		Matrix &operator=(const M &matrixToCopy)
+		{
+			if(this != &matrixToCopy)
+			{
+				delete[] m_values;
 
-	Matrix(const Matrix &matrixToCopy);
-	Matrix &operator=(const Matrix &matrixToCopy);
+				CopyData(matrixToCopy);
+			}
 
-	Matrix(Matrix &&matrixToMove) noexcept;
-	Matrix &operator=(Matrix &&matrixToMove) noexcept;
+			return *this;
+		}
 
-	~Matrix() noexcept;
 
-	// Getters and setters
-	[[nodiscard]] constexpr inline std::size_t Cols() const noexcept { return m_cols; }
-	[[nodiscard]] constexpr inline std::size_t Rows() const noexcept { return m_rows; }
+		Matrix(const ContainedT *data, std::size_t rows, std::size_t cols) :
+			Matrix{rows, cols}
+		{
+			for(std::size_t row = 0; row < rows; ++row)
+			{
+				for(std::size_t col = 0; col < rows; ++col)
+				{
+					const std::size_t pos = CalculatePos(row, col); 
+					m_values[pos] = data[pos];
+				}
+			}
+		}
 
-	constexpr inline const double &operator()(std::size_t row, std::size_t col) const
-	{
-		CheckBounds(*this, row, col);
-		return m_values[CalculatePos(row, col)];
-	}
-	constexpr inline double &operator()(std::size_t row, std::size_t col)
-	{
-		CheckBounds(*this, row, col);
-		return m_values[CalculatePos(row, col)];
-	}
+		Matrix(const ContainedT **data, std::size_t rows, std::size_t cols) :
+			Matrix{rows, cols}
+		{
+			for(std::size_t row = 0; row < rows; ++row)
+			{
+				for(std::size_t col = 0; col < rows; ++col)
+				{
+					const std::size_t pos = CalculatePos(row, col); 
+					m_values[pos] = data[row][col];
+				}
+			}
+		}
 
-	[[nodiscard]] constexpr inline double *data()
-	{
-		return m_values;
-	}
-	[[nodiscard]] constexpr inline const double *data() const
-	{
-		return m_values;
-	}
+		Matrix(const Matrix &matrixToCopy)
+		{
+			CopyData(matrixToCopy);
+		}
 
-	[[nodiscard]] constexpr inline std::size_t size() const
-	{
-		return m_size;
-	}
+		Matrix &operator=(const Matrix &matrixToCopy)
+		{
+			if(this != &matrixToCopy)
+			{
+				delete[] m_values;
 
-	static Matrix Identity(std::size_t rank);
+				CopyData(matrixToCopy);
+			}
 
-private:
-	void MoveData(Matrix &&matrixToMove) noexcept;
-	void CopyData(const Matrix& matrixToCopy);
+			return *this;
+		}
 
-	[[nodiscard]] constexpr inline std::size_t CalculatePos(std::size_t row, std::size_t col) const noexcept
-	{
-		return row * m_cols + col;
-	}
+		Matrix(Matrix &&matrixToMove) noexcept
+		{
+			MoveData(std::move(matrixToMove));
+		}
 
-	std::size_t m_cols{ 0 };
-	std::size_t m_rows{ 0 };
-	std::size_t m_size{ 0 };
+		Matrix &operator=(Matrix &&matrixToMove) noexcept
+		{
+			if (this != &matrixToMove)
+			{
+				MoveData(std::move(matrixToMove));
+			}
+			return *this;
+		}
 
-	double *m_values{ nullptr };
-};
+		~Matrix() noexcept
+		{
+			delete[](m_values);
+		}
 
-static_assert(MatrixT<Matrix>, "Basic matrix type doesn't follow the MatrixT concept");
-static_assert(ContinuousStorageMatrix<Matrix>, "Basic matrix type doesn't follow the ContinuousStorageMatrix concept");
+		// Getters and setters
+		[[nodiscard]] constexpr inline std::size_t Cols() const noexcept { return m_cols; }
+		[[nodiscard]] constexpr inline std::size_t Rows() const noexcept { return m_rows; }
 
+		constexpr inline const ContainedT &operator()(std::size_t row, std::size_t col) const
+		{
+			CheckBounds(*this, row, col);
+			return m_values[CalculatePos(row, col)];
+		}
+		constexpr inline ContainedT &operator()(std::size_t row, std::size_t col)
+		{
+			CheckBounds(*this, row, col);
+			return m_values[CalculatePos(row, col)];
+		}
+
+		[[nodiscard]] constexpr inline ContainedT *data() { return m_values; }
+		[[nodiscard]] constexpr inline const ContainedT *data() const { return m_values; }
+		[[nodiscard]] constexpr inline std::size_t size() const { return m_size; }
+
+		static Matrix Identity(std::size_t rank)
+		{
+			Matrix identityMatrix{rank};
+			for ( std::size_t i = 0; i < rank; ++i)
+			{
+				identityMatrix(i, i) = 1;
+			}
+			return identityMatrix;
+		}
+
+	private:
+		void MoveData(Matrix &&matrixToMove) noexcept
+		{
+			delete[] m_values;
+
+			m_rows = matrixToMove.m_rows;
+			m_cols = matrixToMove.m_cols;
+			m_size = matrixToMove.m_size;
+
+			m_values = matrixToMove.m_values;
+
+			matrixToMove.m_values = nullptr;
+			matrixToMove.m_rows = matrixToMove.m_cols = matrixToMove.m_size = 0;
+		}
+
+		template<ReadonlyMatrixT M>
+			requires std::convertible_to<typename M::contained, ContainedT>
+		void CopyData(const M& matrixToCopy)
+		{
+			m_cols = matrixToCopy.m_cols;
+			m_rows = matrixToCopy.m_rows;
+			m_size = matrixToCopy.m_size;
+
+			m_values = new ContainedT[m_size];
+
+			for(size_t index = 0; index < m_size; index++)
+			{
+				m_values[index] = static_cast<ContainedT>(matrixToCopy.m_values[index]);
+			}
+		}
+
+		[[nodiscard]] constexpr inline std::size_t CalculatePos(std::size_t row, std::size_t col) const noexcept
+		{
+			return row * m_cols + col;
+		}
+
+		std::size_t m_cols{ 0 };
+		std::size_t m_rows{ 0 };
+		std::size_t m_size{ 0 };
+
+		ContainedT *m_values{ nullptr };
+	};
+
+	// template<ReadonlyMatrixT M>
+	// Matrix(const M &matrixToCopy) -> Matrix<typename M::contained>;
+
+	using MatrixF = Matrix<float>;
+	using MatrixD = Matrix<double>;
+
+	static_assert(ReadonlyMatrixT<Matrix<float>>, "Basic matrix type doesn't follow the MatrixT concept");
+	static_assert(MatrixT<Matrix<float>>, "Basic matrix type doesn't follow the MatrixT concept");
+	static_assert(ContinuousStorageMatrix<Matrix<float>>, "Basic matrix type doesn't follow the ContinuousStorageMatrix concept");
 }
+
 
 #endif // MATRIX_H

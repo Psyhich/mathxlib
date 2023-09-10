@@ -1,18 +1,16 @@
-add_library(mathx_matrixes
-	src/matrixes.cpp
-)
+add_library(mathx_matrixes INTERFACE)
 
 target_link_libraries(mathx_matrixes
-	PUBLIC
+	INTERFACE
 		fmt
-	PRIVATE
+
 		mathxlib_project_options
 		mathxlib_project_warnings
 )
 target_include_directories(mathx_matrixes 
-	PUBLIC
+	INTERFACE
 		include
-	PRIVATE
+
 		"${CMAKE_BINARY_DIR}/configured_files/include"
 )
 

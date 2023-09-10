@@ -13,7 +13,7 @@ TEST(MatrixTransposeTest, SimpleMatrixTransposeTestSuccessful)
 		{ 5, 6 },
 		{ 7, 8 },
 	};
-	const Matrix transposed{Transpose(toTranspose)};
+	const auto transposed{Transpose(toTranspose)};
 	const Matrix expected
 	{
 		{ 1, 3, 5, 7 },
@@ -84,11 +84,11 @@ TEST(MatrixDeterminantTest, SquareMatrixDeterminantTestSuccessful_1)
 		{ 4, 5, 6 },
 		{ 7, 8, 9 }
 	};
-	EXPECT_THAT(Determinant(toGetDeterminant), testing::DoubleEq(0));
+	EXPECT_THAT(Determinant(toGetDeterminant), testing::Eq(0));
 }
 TEST(MatrixDeterminantTest, SquareMatrixDeterminantTestSuccessful_2)
 {
-	const Matrix toGetDeterminant
+	const Matrix<double> toGetDeterminant
 	{
 		{ 8, 2.8, 3 },
 		{ 4, 6, 6.9 },
@@ -99,7 +99,7 @@ TEST(MatrixDeterminantTest, SquareMatrixDeterminantTestSuccessful_2)
 TEST(MatrixDeterminantTest, LargeSquareMatrixDeterminantTestSuccessful)
 {
 	// 7 - is largest number when calculation takes adequate time(less then second)
-	Matrix toGetDeterminant{ 7 };
+	Matrix<long> toGetDeterminant{ 7 };
 
 	long number = 1;
 	for(std::size_t row = 0; row < toGetDeterminant.Rows(); row++)
@@ -109,16 +109,16 @@ TEST(MatrixDeterminantTest, LargeSquareMatrixDeterminantTestSuccessful)
 			toGetDeterminant(row, col) = number++;
 		}
 	}
-	EXPECT_THAT(Determinant(toGetDeterminant), testing::DoubleEq(0));
+	EXPECT_THAT(Determinant(toGetDeterminant), testing::Eq(0));
 }
 TEST(MatrixDeterminantTest, SingleValueSquareMatrixDeterminantTestSuccessful)
 {
 	Matrix toGetDeterminant{ { 1 } };
-	EXPECT_THAT(Determinant(toGetDeterminant), testing::DoubleEq(1));
+	EXPECT_THAT(Determinant(toGetDeterminant), testing::Eq(1));
 }
 TEST(MatrixDeterminantTest, NonSquareMatrixDeterminantTestUnsuccessful)
 {
-	Matrix toGetDeterminant{ 6, 3 };
+	Matrix<double> toGetDeterminant{ 6, 3 };
 	EXPECT_THROW({(void)Determinant(toGetDeterminant);}, std::runtime_error);
 }
 
@@ -139,7 +139,7 @@ TEST(MatrixAdjointTest, SquareMatrixAdjointTestSuccessful)
 	EXPECT_THAT(result, IsEqualMatrix(expected));
 }
 TEST(MatrixAdjointTest, NonSquareMatrixAdjointTestUnsuccessful) {
-	const Matrix toBeProcessed{
+	const Matrix<double> toBeProcessed{
 		{ 7, 8, 9, 10.6 },
 		{ 6, 5, 4, 10.6 },
 		{ 3, 2, 1, 10.6 }
@@ -149,14 +149,14 @@ TEST(MatrixAdjointTest, NonSquareMatrixAdjointTestUnsuccessful) {
 }
 TEST(MatrixInverseTest, SquareMatrixInverseTestSuccessful)
 {
-	const Matrix toBeProcessed{
+	const Matrix<double> toBeProcessed{
 		{ 7, 8, 9 },
 		{ 6, 5, 4 },
 		{ 3, 2, 2 }
 	};
 
-	const Matrix result = Inverse(toBeProcessed);
-	const Matrix expected{
+	const Matrix result{Inverse(toBeProcessed)};
+	const Matrix<double> expected{
 		{ -2/13.0, -2/13.0, 1 },
 		{ 0, 1, -2 },
 		{ 3/13.0, -10/13.0, 1 }
@@ -165,7 +165,7 @@ TEST(MatrixInverseTest, SquareMatrixInverseTestSuccessful)
 }
 TEST(MatrixInverseTest, NonSquareMatrixInverseTestUnsuccessful)
 {
-	const Matrix toBeProcessed{
+	const Matrix<double> toBeProcessed{
 		{ 7, 8, 9, 10.6 },
 		{ 6, 5, 4, 10.6 },
 		{ 3, 2, 1, 10.6 }
@@ -188,7 +188,7 @@ TEST(MatrixSimpleOperations, MatrixChainedOperations_1)
 		{ 1, 7 },
 		{ 6, 8 }
 	};
-	const Matrix matrix2{
+	const MatrixD matrix2{
 		{ -3, 6 },
 		{ 10, 2.5 }
 	};
@@ -206,7 +206,7 @@ TEST(MatrixSimpleOperations, MatrixChainedOperations_2)
 		{ 1, 7 },
 		{ 6, 8 }
 	};
-	const Matrix matrix2{
+	const MatrixD matrix2{
 		{ -3, 6 },
 		{ 10, 2.5 }
 	};
@@ -228,12 +228,12 @@ TEST(MatrixSimpleOperations, MatrixChainedOperations_3)
 		{ 1, 7 },
 		{ 6, 8 }
 	};
-	const Matrix matrix2{
+	const MatrixD matrix2{
 		{ -3, 6 },
 		{ 10, 2.5 }
 	};
 
-	const Matrix result{-matrix1 / 4 + matrix1 + matrix2};
+	const Matrix result{-matrix1 / 4. + matrix1 + matrix2};
 	const Matrix expected{
 		{ -2.25, 11.25 },
 		{ 14.5, 8.5 }
@@ -246,7 +246,7 @@ TEST(MatrixSimpleOperations, MatrixChainedOperations_4)
 		{ 1, 7 },
 		{ 6, 8 }
 	};
-	const Matrix matrix2{
+	const MatrixD matrix2{
 		{ -3, 6 },
 		{ 10, 2.5 }
 	};
@@ -264,7 +264,7 @@ TEST(MatrixSimpleOperations, MatrixChainedOperations_5)
 		{ 1, 7 },
 		{ 6, 8 }
 	};
-	const Matrix matrix2{
+	const MatrixD matrix2{
 		{ -3, 6 },
 		{ 10, 2.5 }
 	};
@@ -282,7 +282,7 @@ TEST(MatrixSimpleOperations, MatrixChainedOperations_6)
 		{ 1 },
 		{ 6 }
 	};
-	const Matrix matrix2{
+	const MatrixD matrix2{
 		{ -3, 6 },
 		{ 10, 2.5 }
 	};
@@ -299,7 +299,7 @@ TEST(MatrixSimpleOperations, MatrixChainedOperations_7)
 		{ 1 },
 		{ 6 }
 	};
-	const Matrix matrix2{
+	const MatrixD matrix2{
 		{ -3, 6 },
 		{ 10, 2.5 }
 	};
@@ -316,7 +316,7 @@ TEST(MatrixSimpleOperations, MatrixChainedOperations_8)
 		{ 1, 10 },
 		{ 6, 0 }
 	};
-	const Matrix matrix2{
+	const MatrixD matrix2{
 		{ -3, 6 },
 		{ 10, 2.5 }
 	};
