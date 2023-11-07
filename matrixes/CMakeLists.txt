@@ -23,3 +23,4 @@ target_include_directories(mathx_matrixes
 if(ENABLE_TESTING)
 	add_subdirectory(unit_tests)
 endif()
+

@@ -10,6 +10,7 @@ namespace MxLib
 	{
 	public:
 		using contained = M::contained;
+		using viewed = M;
 
 		MatrixView(const M &matrixToView,
 			std::size_t rowStart, std::size_t colStart,
@@ -44,10 +45,10 @@ namespace MxLib
 		}
 
 	private:
-		const std::size_t m_rowStart{0};
-		const std::size_t m_colStart{0};
-		const std::size_t m_rows{0};
-		const std::size_t m_cols{0};
+		std::size_t m_rowStart{0};
+		std::size_t m_colStart{0};
+		std::size_t m_rows{0};
+		std::size_t m_cols{0};
 
 		const M &m_viewedMatrix;
 	};
@@ -57,6 +58,7 @@ namespace MxLib
 	{
 	public:
 		using contained = M::contained;
+		using viewed = M;
 
 		RowView(const M &viewedMatrix, std::size_t viewedRow) :
 			m_viewedMatrix{viewedMatrix},
@@ -76,6 +78,7 @@ namespace MxLib
 
 		[[nodiscard]] inline const contained &operator[](std::size_t colToView) const
 		{
+			CheckBounds(*this, 0, colToView);
 			return m_viewedMatrix(m_viewedRow, colToView);
 		}
 
@@ -96,6 +99,7 @@ namespace MxLib
 	{
 	public:
 		using contained = M::contained;
+		using viewed = M;
 
 		ColView(const M &viewedMatrix, std::size_t viewedCol) :
 			m_viewedMatrix{viewedMatrix},
@@ -114,6 +118,7 @@ namespace MxLib
 
 		[[nodiscard]] inline const contained &operator[](std::size_t rowToView) const 
 		{
+			CheckBounds(*this, rowToView, 0);
 			return m_viewedMatrix(rowToView, m_viewedCol);
 		}
 

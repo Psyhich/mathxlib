@@ -18,9 +18,9 @@ namespace MxLib::algo
 	using MapFunc = std::function<ReturnT(InT &value)>;
 
 	template<ReadonlyMatrixT M, typename OutT>
-	[[nodiscard]] ArithmeticResult<M, M, OutT> Map(const M& matrix, const MapFunc<OutT, typename M::contained> &func)
+	[[nodiscard]] constexpr ScalarResult<M, M, OutT> Map(const M& matrix, const MapFunc<OutT, typename M::contained> &func)
 	{
-		ArithmeticResult<M, M, OutT> outMatrix{matrix};
+		ScalarResult<M, M, OutT> outMatrix{matrix};
 		for (size_t row = 0; row < outMatrix.Rows(); row++)
 		{
 			for (size_t col = 0; col < outMatrix.Cols(); col++)
@@ -33,7 +33,7 @@ namespace MxLib::algo
 	}
 
 	template<MatrixT M, typename OutT>
-	M &MapInplace(M &matrixToMap, const MapFunc<OutT, typename M::contained> &func)
+	constexpr M &MapInplace(M &matrixToMap, const MapFunc<OutT, typename M::contained> &func)
 	{
 		for (size_t row = 0; row < matrixToMap.Rows(); row++)
 		{
@@ -45,9 +45,9 @@ namespace MxLib::algo
 	}
 
 	template<ReadonlyMatrixT M>
-	[[nodiscard]] ArithmeticResult<M, M, typename M::contained> Transpose(const M &matrixToTranspose)
+	[[nodiscard]] constexpr ScalarResult<M, M, typename M::contained> Transpose(const M &matrixToTranspose)
 	{
-		ArithmeticResult<M, M, typename M::contained> transposed{matrixToTranspose.Cols(), matrixToTranspose.Rows()};
+		ScalarResult<M, M, typename M::contained> transposed{matrixToTranspose.Cols(), matrixToTranspose.Rows()};
 		for (size_t row = 0; row < matrixToTranspose.Rows(); row++)
 		{
 			for (size_t col = 0; col < matrixToTranspose.Cols(); col++)
@@ -59,10 +59,10 @@ namespace MxLib::algo
 	}
 
 	template<ReadonlyMatrixT M>
-	[[nodiscard]] typename M::contained Determinant(const M &matrix)
+	[[nodiscard]] constexpr typename M::contained Determinant(const M &matrix)
 	{
 		using ContainedT = typename M::contained;
-		using OutMatrix = ArithmeticResult<M, M, ContainedT>;
+		using OutMatrix = Matrix<ContainedT>;
 
 		IsSquareMatrix(matrix);
 
@@ -102,7 +102,7 @@ namespace MxLib::algo
 	}
 
 	template<ReadonlyMatrixT M>
-	[[nodiscard]] MultiplicationResult<M> Adjoint(const M &matrix)
+	[[nodiscard]] constexpr MultiplicationResult<M> Adjoint(const M &matrix)
 	{
 		IsSquareMatrix(matrix);
 
@@ -123,7 +123,7 @@ namespace MxLib::algo
 	}
 	
 	template<ReadonlyMatrixT M>
-	[[nodiscard]] DivisionResult<MultiplicationResult<M>> Inverse(const M &matrixToInverse)
+	[[nodiscard]] constexpr DivisionResult<MultiplicationResult<M>> Inverse(const M &matrixToInverse)
 	{
 		using ContainedT = typename DivisionResult<MultiplicationResult<M>>::contained;
 		IsSquareMatrix(matrixToInverse);

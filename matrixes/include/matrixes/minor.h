@@ -11,6 +11,7 @@ namespace MxLib
 	{
 	public:
 		using contained = Viewed::contained;
+		using viewed = Viewed;
 
 		MinorView(const Viewed &matrix, std::size_t row, std::size_t col) :
 			m_viewedMatrix{matrix},
@@ -48,8 +49,8 @@ namespace MxLib
 
 	private:
 		const Viewed &m_viewedMatrix;
-		const std::size_t m_excludedRow;
-		const std::size_t m_excludedCol;
+		std::size_t m_excludedRow;
+		std::size_t m_excludedCol;
 	};
 
 	static_assert(ReadonlyMatrixT<MinorView<MatrixD>>);

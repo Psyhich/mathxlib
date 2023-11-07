@@ -3,6 +3,8 @@ target_sources(unit_tests
 		src/unittest_matrix.cpp
 		src/unittest_matrix_operators.cpp
 		src/unittest_matrix_algorithms.cpp
+		src/unittest_static_matrix_operations.cpp
+		src/unittest_vector.cpp
 )
 target_include_directories(unit_tests
 	PRIVATE

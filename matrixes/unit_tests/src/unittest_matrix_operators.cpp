@@ -6,30 +6,10 @@
 #include <fmt/color.h>
 
 #include "unittest_common.h"
+#include "matrixes/matrix.h"
 #include "matrixes/operations.h"
 
 using namespace MxLib;
-
-MATCHER_P2(IsMatrixValuesInRange, rangeStart, rangeEnd, "")
-{
-	for(std::size_t row = 0; row < arg.Rows(); row++)
-	{
-		for(std::size_t col = 0; col < arg.Rows(); col++)
-		{
-			if(arg(row, col) < rangeStart ||
-				arg(row, col) > rangeEnd)
-			{
-				*result_listener << fmt::format(fg(fmt::color::red), "\nERROR:") <<
-					fmt::format("\nMatrix value {} on {{{};{}}}"
-							" is not in range [{};{}]\n",
-							arg(row, col), row, col,
-							rangeStart, rangeEnd);
-				return false;
-			}
-		}
-	}
-	return true;
-}
 
 TEST(MatrixRandomizationTest, RandomizeRightRangeTestSuccessful_1)
 {

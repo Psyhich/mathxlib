@@ -88,7 +88,7 @@ TEST(MatrixDeterminantTest, SquareMatrixDeterminantTestSuccessful_1)
 }
 TEST(MatrixDeterminantTest, SquareMatrixDeterminantTestSuccessful_2)
 {
-	const Matrix<double> toGetDeterminant
+	const MatrixD toGetDeterminant
 	{
 		{ 8, 2.8, 3 },
 		{ 4, 6, 6.9 },
@@ -118,7 +118,7 @@ TEST(MatrixDeterminantTest, SingleValueSquareMatrixDeterminantTestSuccessful)
 }
 TEST(MatrixDeterminantTest, NonSquareMatrixDeterminantTestUnsuccessful)
 {
-	Matrix<double> toGetDeterminant{ 6, 3 };
+	MatrixD toGetDeterminant{ 6, 3 };
 	EXPECT_THROW({(void)Determinant(toGetDeterminant);}, std::runtime_error);
 }
 
@@ -139,7 +139,7 @@ TEST(MatrixAdjointTest, SquareMatrixAdjointTestSuccessful)
 	EXPECT_THAT(result, IsEqualMatrix(expected));
 }
 TEST(MatrixAdjointTest, NonSquareMatrixAdjointTestUnsuccessful) {
-	const Matrix<double> toBeProcessed{
+	const MatrixD toBeProcessed{
 		{ 7, 8, 9, 10.6 },
 		{ 6, 5, 4, 10.6 },
 		{ 3, 2, 1, 10.6 }
@@ -149,14 +149,14 @@ TEST(MatrixAdjointTest, NonSquareMatrixAdjointTestUnsuccessful) {
 }
 TEST(MatrixInverseTest, SquareMatrixInverseTestSuccessful)
 {
-	const Matrix<double> toBeProcessed{
+	const MatrixD toBeProcessed{
 		{ 7, 8, 9 },
 		{ 6, 5, 4 },
 		{ 3, 2, 2 }
 	};
 
 	const Matrix result{Inverse(toBeProcessed)};
-	const Matrix<double> expected{
+	const MatrixD expected{
 		{ -2/13.0, -2/13.0, 1 },
 		{ 0, 1, -2 },
 		{ 3/13.0, -10/13.0, 1 }
@@ -165,7 +165,7 @@ TEST(MatrixInverseTest, SquareMatrixInverseTestSuccessful)
 }
 TEST(MatrixInverseTest, NonSquareMatrixInverseTestUnsuccessful)
 {
-	const Matrix<double> toBeProcessed{
+	const MatrixD toBeProcessed{
 		{ 7, 8, 9, 10.6 },
 		{ 6, 5, 4, 10.6 },
 		{ 3, 2, 1, 10.6 }
