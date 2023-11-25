@@ -5,7 +5,6 @@
 #include <stdexcept>
 #include <array>
 
-
 #include <fmt/format.h>
 
 #include "matrix_concepts.h"
