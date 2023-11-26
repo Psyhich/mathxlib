@@ -424,10 +424,18 @@ namespace MxLib
 	template<typename ContainedT, std::size_t rows, std::size_t cols>
 	struct MatrixConstructor<SMatrix<ContainedT, rows, cols>>
 	{
-		static constexpr SMatrix<ContainedT, rows, cols> Create(std::size_t /*unused*/, std::size_t /*unused*/)
+		using Created = SMatrix<ContainedT, rows, cols>;
+
+		static constexpr Created Create(std::size_t /*unused*/, std::size_t /*unused*/)
 		{
 			return SMatrix<ContainedT, rows, cols>{};
 		}
+	};
+
+	template<typename ContainedT, std::size_t rows, std::size_t cols>
+	struct TransposeOperationDeducer<SMatrix<ContainedT, rows, cols>>
+	{
+		using value = SMatrix<ContainedT, cols, rows>;
 	};
 }
 

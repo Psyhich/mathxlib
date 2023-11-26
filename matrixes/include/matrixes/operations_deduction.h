@@ -8,11 +8,18 @@ namespace MxLib
 	template<MatrixT M>
 	struct MatrixConstructor
 	{
-		static M Create(std::size_t rows, std::size_t cols)
+		static constexpr M Create(std::size_t rows, std::size_t cols)
 		{
 			return M{rows, cols};
 		}
 	};
+
+	template<MatrixT M>
+	struct TransposeOperationDeducer
+	{
+		using value = M;
+	};
+
 
 	template<ReadonlyMatrixT LMatrix, ReadonlyMatrixT RMatrix, typename ResultT>
 	struct OperationDeducer
@@ -30,6 +37,9 @@ namespace MxLib
 		using contained = ResultT;
 		using value = OperationResult<LMatrix, RMatrix, ResultT>;
 	};
+
+	template<MatrixT Matrix>
+	using TransposeResult = typename TransposeOperationDeducer<Matrix>::value;
 
 	template<ReadonlyMatrixT LMatrix, ReadonlyMatrixT RMatrix, typename ResultT>
 	using ScalarResult = typename ScalarOperationDeducer<RMatrix, LMatrix, ResultT>::value;

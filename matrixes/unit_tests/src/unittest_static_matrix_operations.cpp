@@ -2,6 +2,7 @@
 
 #include "matrixes/matrix.h"
 #include "matrixes/operations.h"
+#include "matrixes/algorithms.h"
 
 
 TEST(StaticMatrixRandomizationTest, RandomizeRightRangeTestSuccessful_1)
@@ -537,4 +538,12 @@ TEST(StaticMatrixEqualityCheckerTest, DifferentDimensionsMatrixEqualityCheckerTe
 		{ 0, 11 }
 	};
 	EXPECT_FALSE(IsEqualTo(matrix1, matrix2));
+}
+TEST(StaticMatrixTransposeTest, StaticMatrixTranspositionTest_1)
+{
+	const MxLib::SMatrix<int, 2, 1> matrix1{
+		{ 1 },
+		{ 10 }
+	};
+	const MxLib::SMatrix<int, 1, 2> matrix2{MxLib::algo::Transpose(matrix1)};
 }

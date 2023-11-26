@@ -44,10 +44,10 @@ namespace MxLib::algo
 		}
 	}
 
-	template<ReadonlyMatrixT M>
-	[[nodiscard]] constexpr ScalarResult<M, M, typename M::contained> Transpose(const M &matrixToTranspose)
+	template<MatrixT M>
+	[[nodiscard]] constexpr TransposeResult<M> Transpose(const M &matrixToTranspose)
 	{
-		ScalarResult<M, M, typename M::contained> transposed{matrixToTranspose.Cols(), matrixToTranspose.Rows()};
+		auto transposed{MatrixConstructor<TransposeResult<M>>::Create(matrixToTranspose.Cols(), matrixToTranspose.Rows())};
 		for (size_t row = 0; row < matrixToTranspose.Rows(); row++)
 		{
 			for (size_t col = 0; col < matrixToTranspose.Cols(); col++)
