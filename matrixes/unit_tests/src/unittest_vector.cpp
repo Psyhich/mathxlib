@@ -1,6 +1,6 @@
 #include "unittest_common.h"
 
-#include "vector.h"
+#include "matrixes/vector.h"
 
 using namespace MxLib;
 using namespace MxLib::algo;
